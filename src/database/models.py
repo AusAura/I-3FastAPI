@@ -47,14 +47,12 @@ class Publication(Base):
     # image: Mapped["PubImage"] = relationship("PubImage", back_populates="publications", uselist=False)
     #
     # # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    # comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id"))
     # comment: Mapped["Comment"] = relationship("Comment", back_populates="publications")
     #
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
     # tags: Mapped[list["Tag"]] = relationship("Tag", secondary="post_tag", back_populates="publications")
     #
     # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
-    # rating_id: Mapped[int] = mapped_column(ForeignKey("ratings.id"))
     # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
