@@ -42,10 +42,10 @@ class Publication(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", back_populates="publications", lazy="joined")
 
-    # # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
-    # pub_image_id: Mapped[int] = mapped_column(ForeignKey("pub_images.id"), unique=True)
-    # image: Mapped["PubImage"] = relationship("PubImage", back_populates="publications", uselist=False)
-    #
+    # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
+    pub_image_id: Mapped[int] = mapped_column(ForeignKey("pub_images.id"), unique=True)
+    image: Mapped["PubImage"] = relationship("PubImage", back_populates="publications", uselist=False)
+
     # # cls Comment  __tablename__ = "comments"     OneToMany relationship
     # comment: Mapped["Comment"] = relationship("Comment", back_populates="publications")
     #
@@ -57,3 +57,14 @@ class Publication(Base):
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
+
+
+class PubImage(Base):
+    __tablename__ = "pub_images"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    current_img: Mapped[str] = mapped_column(String(255), nullable=False)
+    updated_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
+    qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
+
+
