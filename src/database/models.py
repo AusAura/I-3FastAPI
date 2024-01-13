@@ -26,6 +26,7 @@ class User(Base):
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
     refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
     role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user)
+    confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
@@ -40,11 +41,11 @@ class Publication(Base):
     description: Mapped[str] = mapped_column(String(255), nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship("User", back_populates="publications", lazy="joined")
+    user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
     # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
     pub_image_id: Mapped[int] = mapped_column(ForeignKey("pub_images.id"), unique=True)
-    image: Mapped["PubImage"] = relationship("PubImage", back_populates="publications", uselist=False)
+    image: Mapped["PubImage"] = relationship("PubImage", backref="publications")
 
     # # cls Comment  __tablename__ = "comments"     OneToMany relationship
     # comment: Mapped["Comment"] = relationship("Comment", back_populates="publications")
