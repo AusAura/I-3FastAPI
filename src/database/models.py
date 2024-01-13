@@ -47,9 +47,9 @@ class Publication(Base):
     pub_image_id: Mapped[int] = mapped_column(ForeignKey("pub_images.id"), unique=True)
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications")
 
-    # # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    # comment: Mapped["Comment"] = relationship("Comment", back_populates="publications")
-    #
+    # cls Comment  __tablename__ = "comments"     OneToMany relationship
+    comments: Mapped["Comment"] = relationship("Comment", back_populates="publications")
+
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
     # tags: Mapped[list["Tag"]] = relationship("Tag", secondary="post_tag", back_populates="publications")
     #
@@ -68,4 +68,21 @@ class PubImage(Base):
     updated_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
     qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
 
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship("User", backref="comments", lazy="joined")
+    text: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"))
+    publications: Mapped["Publication"] = relationship("Publication", back_populates="comments", lazy="joined")
+
+    # emoji: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user) # reaction with the comment?
+
+    created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 

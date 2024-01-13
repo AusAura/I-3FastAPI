@@ -15,7 +15,7 @@ SessionLocal = sessionmaker
 
 class DatabaseSessionManager:
     def __init__(self, url: str) -> None:
-        self._engine: AsyncEngine = create_async_engine(SQLALCHEMY_DATABASE_URL)
+        self._engine: AsyncEngine = create_async_engine(url)
         self._session_maker: async_sessionmaker = async_sessionmaker(autocommit=False, autoflush=False,
                                                                      bind=self._engine)
 
