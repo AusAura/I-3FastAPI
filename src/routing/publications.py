@@ -1,19 +1,18 @@
-import pickle
-
 import cloudinary
 import cloudinary.uploader
 
-from fastapi import APIRouter, Depends, UploadFile, File
-from redis import Redis
+from fastapi import APIRouter, Depends, File, UploadFile
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from src.conf.config import config
 from src.database.db import get_db
 from src.database.models import User
-from src.dependency import get_cache
 from src.repositories import publications as repositories_publications
-from src.schemas.publications import PublicationCreate, PubImageSchema
+from src.services.auth import auth_service
+from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationResponse, TempImage
+from src.utils.my_logger import logger
 
 router = APIRouter(prefix='/publication', tags=['Publications'])
 
@@ -25,30 +24,26 @@ cloudinary.config(
 )
 
 
-# TODO START zaglushka
-class auth_service:
-    def get_current_user(self):
-        return User(id=1, username="test", email="test@gmail.com", password="test123456")
+@router.post('/upload_image', status_code=status.HTTP_201_CREATED, response_model=TempImage)
+async def upload_image(file: UploadFile = File(), user: User = Depends(auth_service.get_current_user)):
+    # TODO services for cloudinary
+    r = cloudinary.uploader.upload(file.file, public_id=f'Temp/{user.email}', overwrite=True)
 
-
-# TODO END zaglushka
-user = auth_service().get_current_user()
-
-
-@router.post('/upload_image', status_code=status.HTTP_201_CREATED, response_model=PubImageSchema)
-async def upload_image(file: UploadFile = File()):
-    r = cloudinary.uploader.upload(file.file, public_id=f'NotesApp/{user.email}', overwrite=True)
-    current_image_url = cloudinary.CloudinaryImage(f'NotesApp/{user.email}') \
+    current_image_url = cloudinary.CloudinaryImage(f'Temp/{user.email}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
-    return {"current_img": current_image_url, "updated_img": None, "qr_code_img": None}
+    logger.Debug(f"upload_image: {current_image_url}")
+    return TempImage(**{"current_img": current_image_url})
 
 
-@router.post('/create', status_code=status.HTTP_201_CREATED, response_model=PublicationCreate)
-async def create_publication(body: PublicationCreate, db: AsyncSession = Depends(get_db),
-                             uploader=Depends(upload_image)):
-    img_body = await uploader()
-    # TODO some changes with cloudinary
+@router.post('/create', status_code=status.HTTP_201_CREATED, response_model=PublicationResponse)
+async def create_publication(body: PublicationCreate,
+                             db: AsyncSession = Depends(get_db),
+                             user: User = Depends(auth_service.get_current_user)):
 
-    publication = await repositories_publications.create_publication(body, img_body,  db, user)
+    current_image_url = cloudinary.CloudinaryImage(f'Temp/{user.email}').build_url()
+    logger.debug(f"user: {user}")
+    logger.debug(f"user_id: {user.id}")
+    img_body = PubImageSchema(**{"current_img": current_image_url, "updated_img": None, "qr_code_img": None})
+    publication = await repositories_publications.create_publication(body, img_body, db, user.id)
 
     return publication

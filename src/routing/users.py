@@ -35,7 +35,7 @@ cloudinary.config(
     "/me",
     response_model=UserResponse,
     )
-async def get_current_user(user: User = Depends(auth_service.get_current_user)):
+async def read_user_me(user: User = Depends(auth_service.get_current_user)):
     return user
 
 # TODO after Cloudinary

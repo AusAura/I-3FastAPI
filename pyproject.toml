@@ -23,6 +23,7 @@ uvicorn = "^0.25.0"
 python-multipart = "^0.0.6"
 python-jose = "^3.3.0"
 bcrypt = "^4.1.2"
+libgravatar = "^1.0.4"
 
 
 

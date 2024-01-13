@@ -1,6 +1,8 @@
 import enum
 from datetime import date
+from typing import Optional
 
+from pydantic import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
 from sqlalchemy.orm import DeclarativeBase
@@ -69,7 +71,6 @@ class PubImage(Base):
     qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
 
 
-
 class Comment(Base):
     __tablename__ = "comments"
 
@@ -85,4 +86,3 @@ class Comment(Base):
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
-

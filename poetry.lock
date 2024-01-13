@@ -581,6 +581,17 @@ files = [
 cryptography = ">=3.1,<3.4.0 || >3.4.0"
 
 [[package]]
+name = "libgravatar"
+version = "1.0.4"
+description = "A library that provides a Python 3 interface for the Gravatar API."
+optional = false
+python-versions = "*"
+files = [
+    {file = "libgravatar-1.0.4-py2.py3-none-any.whl", hash = "sha256:f967619b38914e0f941e53387881005e43929814571103f6bbfa2afd75045e20"},
+    {file = "libgravatar-1.0.4.tar.gz", hash = "sha256:05cf4f8dfefe995d09078cd3d747c8f04dcf17d6004fc7bb542049a55f2238d9"},
+]
+
+[[package]]
 name = "mako"
 version = "1.3.0"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
@@ -958,7 +969,6 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
-
 name = "python-jose"
 version = "3.3.0"
 description = "JOSE implementation in Python"
@@ -980,7 +990,6 @@ pycrypto = ["pyasn1", "pycrypto (>=2.6.0,<2.7.0)"]
 pycryptodome = ["pyasn1", "pycryptodome (>=3.3.1,<4.0.0)"]
 
 [[package]]
-
 name = "python-multipart"
 version = "0.0.6"
 description = "A streaming multipart parser for Python"
@@ -1200,8 +1209,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-
-content-hash = "f1ec2031d84e4dc42e9c27a2d877c4ab27b5b2121d1f3f5e922e927a771fa7e1"
-
-# content-hash = "601125b19f64c34c817f8301f3376a648b6bb369409f3596e710c74a68525f50"
-
+content-hash = "a5f0da0a3635bb0c3dc50dc65c9e0fc7aa4822b4fe26f42067de6cfdb07dde3f"

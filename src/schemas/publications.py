@@ -1,10 +1,14 @@
 from typing import Optional
 
+from fastapi import UploadFile
 from pydantic import BaseModel, Field
 
 
-class PubImageSchema(BaseModel):
+class TempImage(BaseModel):
     current_img: str
+
+
+class PubImageSchema(TempImage):
     updated_img: Optional[str] = None
     qr_code_img: Optional[str] = None
 
@@ -19,5 +23,8 @@ class PublicationCreate(PublicationSchema):
     pass
 
 
-class PublicationReturn(PublicationSchema):
+class PublicationResponse(PublicationSchema):
     image: PubImageSchema
+
+    class Config:
+        from_attributes = True
