@@ -2,3 +2,16 @@
 
 SESSION_NOT_CREATED = 'Session is not initialized!'
 SOME_EXCEPTION_SESSION = 'Seems like the following exception appeared during session creation: '
+FORBIDDEN = 'You don\'t have access to this resource.'
+INVALID_SCOPES = 'Invalid scope for token'
+NOT_VALID_CREDENTIALS = "Could not validate credentials"
+INVALID_TOKEN = "Invalid token for email verification"
+ACCOUNT_ALREADY_EXISTS = "Account already exists"
+INVALID_EMAIL = "Invalid email"
+EMAIL_NOT_CONFIRMED = "Email not confirmed"
+INVALID_PASSWORD = "Invalid password"
+INVALID_REFRESH_TOKEN = "Invalid refresh token"
+VERIFICATION_ERROR = "Verification error"
+EMAIL_ALREADY_CONFIRMED = "Your email is already confirmed"
+EMAIL_CONFIRMED = "Email confirmed"
+CHECK_EMAIL = "Check your email for confirmation link"
