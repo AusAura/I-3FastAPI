@@ -1,30 +1,35 @@
 from datetime import datetime, date
 from pydantic import BaseModel, Field, EmailStr
 
-from src.schemas import comments
+from src import messages
 
-
-class CommentModel(BaseModel):
-    id: int
-    username: str
+class CommentModelEditing(BaseModel):
     text: str
-    publication_id: int
 
-    created_at: datetime
-    updated_at: datetime
-    
     class Config:
         orm_mode = True
 
 
+class CommentModel(CommentModelEditing):
+
+    created_at: datetime
+    updated_at: datetime
+    
+
+class CommentModelReturned(CommentModel):
+    id: int
+    user_id: int
+    publication_id: int
+
+
 class CommentResponceAdded(BaseModel):
-    comment: CommentModel
-    detail: str = comments.CommentResponceAdded
+    comment: CommentModelReturned
+    detail: str = messages.COMMENT_SUCCESSFULLY_ADDED
 
 class CommentResponceEdited(BaseModel):
-    comment: CommentModel
-    detail: str = comments.CommentResponceEdited
+    comment: CommentModelReturned
+    detail: str = messages.COMMENT_SUCCESSFULLY_EDITED
 
 class CommentResponceDeleted(BaseModel):
-    comment: CommentModel
-    detail: str = comments.CommentResponceDeleted
+    comment: CommentModelReturned
+    detail: str = messages.COMMENT_SUCCESSFULLY_DELETED

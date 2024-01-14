@@ -4,14 +4,17 @@ from src.database.db import AsyncSession
 from sqlalchemy import func, and_
 from typing import List
 
+from sqlalchemy.future import select
+from src.utils.my_logger import logger as my_logger
+
 dummy_user = User(
-    id=0,
+    id=1,
     username='Josh Dummy',
     email='joshdummy@gmail.com',
     password='iafshgsgisuhgishg',
     avatar='ahfoshgiushgiusghgs',
     refresh_token='ahfhsdighsighs',
-    role=Role.user,
+    role=Role.admin,
     is_active=True,
     confirmed=True,
     created_at=DateTime(),
@@ -23,7 +26,6 @@ user = dummy_user
 dummy_publication = Publication(
     id=1,
     user_id=user.id,
-    pub_image_id=0,
     title='Dummy title',
     description='I am a dummy mummy',
     created_at=DateTime(),
@@ -33,48 +35,56 @@ dummy_publication = Publication(
 publication = dummy_publication
 ####
 
-async def add_comment(body: CommentModel, user: User, db: AsyncSession) -> Comment:
+
+async def add_comment(publication_id: int, current_user: User, body: CommentModel, db: AsyncSession) -> Comment:
     comment = Comment(
-        id=body.id,
-        username=body.user.username,
+        user_id=current_user.id,
         text=body.text,
-        publication_id=body.publication_id,
-        created_at=body.created_at,
-        updated_at=body.updated_at
+        publication_id=publication_id,
+        # created_at=body.created_at,
+        # updated_at=body.updated_at
     )
 
+    my_logger.info(comment.id, comment.user_id, comment.text, comment.publication_id, comment.created_at, comment.updated_at)
     db.add(comment)
-    db.commit()
-    db.refresh(comment)
+    await db.commit()
+    await db.refresh(comment)
 
     return comment
 
-async def edit_comment(comment_id: int, body: CommentModel, user: User, db: AsyncSession) -> Comment | None:
-    comment = db.query(Comment).filter(and_(Comment.user_id == user.id, Comment.id == comment_id)).first()
+
+async def edit_comment(comment_id: int, body: CommentModelEditing, current_user: User, db: AsyncSession) -> Comment | None:
+    comment = await db.execute(select(Comment).filter(and_(Comment.user_id == current_user.id, Comment.id == comment_id)))
+    comment = comment.scalar_one_or_none()
+
+    my_logger.info(body.text)
     if comment:
-        comment.id=body.id,
-        comment.username=body.user.username,
-        comment.text=body.text,
-        comment.publication_id=body.publication_id,
-        comment.created_at=body.created_at,
-        comment.updated_at=body.updated_at
-        db.commit()
+        comment.text=body.text
+        await db.commit()
+        await db.refresh(comment)
 
     return comment
 
-async def delete_comment(comment_id: int, user: User, db: AsyncSession) -> Comment | None:
-    comment = db.query(Comment).filter(and_(Comment.user_id == user.id, Comment.id == comment_id)).first()
+
+async def delete_comment(comment_id: int, current_user: User, db: AsyncSession) -> Comment | None:
+    
+    comment = await db.execute(select(Comment).filter(and_(Comment.user_id == current_user.id, Comment.id == comment_id)))
+    comment = comment.scalar_one_or_none()
+        
     if comment:
-        db.delete(comment)
-        db.commit()
+        await db.delete(comment)
+        await db.commit()
 
     return comment
 
 
-async def get_comments(publication_id: int, skip: int, limit: int, user: User, db: AsyncSession) -> List[Comment]:
-    return db.query(Comment).filter(Comment.publication_id == publication.id).offset(skip).limit(limit).order_by(Comment.created_at).all()
+async def get_comments(publication_id: int, skip: int, limit: int, db: AsyncSession) -> List[Comment]:
+    comment = await db.execute(select(Comment).filter(Comment.publication_id == publication_id).offset(skip).limit(limit).order_by(Comment.created_at))
+    comment = comment.scalars()
+    return comment
 
 
-async def get_comment(publication_id: int, query: str, user: User, db: AsyncSession) -> Comment:
-    result = db.query(Comment).filter(and_(Comment.publication_id == publication_id, Comment.user_id == user.id)).first()
-    return result
+async def get_comment(publication_id: int, comment_id: int, db: AsyncSession) -> Comment | None:
+    comment = await db.execute(select(Comment).filter(and_(Comment.publication_id == publication_id, Comment.user_id == user.id, Comment.id == comment_id)))
+    comment = comment.scalar_one_or_none()
+    return comment
