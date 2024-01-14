@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi import UploadFile
 from pydantic import BaseModel, Field
 
 
@@ -20,6 +19,10 @@ class PublicationSchema(BaseModel):
 
 
 class PublicationCreate(PublicationSchema):
+    pass
+
+
+class PublicationUpdate(PublicationSchema):
     pass
 
 
