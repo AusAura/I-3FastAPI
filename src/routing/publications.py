@@ -1,7 +1,7 @@
 import cloudinary
 import cloudinary.uploader
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile, Query
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -31,7 +31,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 
     current_image_url = cloudinary.CloudinaryImage(f'Temp/{user.email}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
-    logger.Debug(f"upload_image: {current_image_url}")
+
     return TempImage(**{"current_img": current_image_url})
 
 
@@ -39,11 +39,17 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 async def create_publication(body: PublicationCreate,
                              db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user)):
-
+    # TODO services for cloudinary
     current_image_url = cloudinary.CloudinaryImage(f'Temp/{user.email}').build_url()
-    logger.debug(f"user: {user}")
-    logger.debug(f"user_id: {user.id}")
     img_body = PubImageSchema(**{"current_img": current_image_url, "updated_img": None, "qr_code_img": None})
-    publication = await repositories_publications.create_publication(body, img_body, db, user.id)
-
+    publication = await repositories_publications.create_publication(body, img_body, db, user)
+    # TODO services for cloudinary delete temp image
     return publication
+
+
+@router.get('/', response_model=list[PublicationResponse])
+async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+
+    publications = await repositories_publications.get_publications(limit, offset, db, user)
+    return publications

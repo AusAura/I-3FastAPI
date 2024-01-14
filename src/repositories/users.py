@@ -18,9 +18,7 @@ async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
 
 
 async def create_user(body: UserSchema, db: AsyncSession = Depends(get_db)):
-    number = await count_users(db)
-    if number == 0:
-        body.role = 'admin'
+    role = 'admin' if await count_users(db) == 0 else 'user'
     avatar = None
     try:
         g = Gravatar(body.email)
@@ -28,7 +26,7 @@ async def create_user(body: UserSchema, db: AsyncSession = Depends(get_db)):
     except Exception as err:
         print(err)
 
-    new_user = User(**body.model_dump(), avatar=avatar)
+    new_user = User(**body.model_dump(), avatar=avatar, role=role)
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)

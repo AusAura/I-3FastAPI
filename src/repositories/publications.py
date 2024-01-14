@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
@@ -13,26 +14,19 @@ async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
     return pub_img
 
 
-async def create_publication(body: PublicationCreate, img_body: PubImageSchema, db: AsyncSession, user_id: int):
-
+async def create_publication(body: PublicationCreate, img_body: PubImageSchema, db: AsyncSession, user: User):
     pub_img = await create_pub_img(img_body, db)
-
-    logger.debug(f"create_publication: {pub_img}")
-
-
-    publication = Publication(**body.model_dump(exclude_unset=True))
-
-    logger.debug(f"publication: {publication}")
-
-    publication.user_id = user_id
-
-    logger.debug(f"publication_user_id: {publication.user_id}")
-
-    publication.image_id = pub_img.id
-
-    logger.debug(f"create_publication: {publication}")
-
+    publication = Publication(**body.model_dump(exclude_unset=True), user=user, image=pub_img)
     db.add(publication)
     await db.commit()
     await db.refresh(publication)
+
     return publication
+
+
+async def get_publications(limit, offset, db, user):
+
+    stmt = select(Publication).filter_by(user=user).offset(offset).limit(limit)
+    publications = await db.execute(stmt)
+    return publications.scalars().all()
+

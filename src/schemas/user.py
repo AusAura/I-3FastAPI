@@ -9,6 +9,7 @@ class UserSchema(BaseModel):
     password: str = Field(min_length=6, max_length=8)
 
 
+
 class UserResponse(BaseModel):
     id: int = 1
     username: str
