@@ -1,3 +1,4 @@
+from redis import Redis
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
@@ -11,10 +12,12 @@ SQLALCHEMY_DATABASE_URL = config.DB_URL
 
 SessionLocal = sessionmaker
 
+
 class DatabaseSessionManager:
     def __init__(self, url: str) -> None:
-        self._engine: AsyncEngine = create_async_engine(SQLALCHEMY_DATABASE_URL)
-        self._session_maker: async_sessionmaker = async_sessionmaker(autocommit=False, autoflush=False, bind=self._engine)
+        self._engine: AsyncEngine = create_async_engine(url)
+        self._session_maker: async_sessionmaker = async_sessionmaker(autocommit=False, autoflush=False,
+                                                                     bind=self._engine)
 
     @contextlib.asynccontextmanager
     async def session(self) -> AsyncSession:
@@ -30,7 +33,9 @@ class DatabaseSessionManager:
         finally:
             await session.close()
 
+
 sessionmanager = DatabaseSessionManager(SQLALCHEMY_DATABASE_URL)
+
 
 # Dependency
 async def get_db() -> AsyncSession:
