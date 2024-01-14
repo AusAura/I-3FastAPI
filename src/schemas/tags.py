@@ -1,9 +1,9 @@
-from typing import List
+
 
 from pydantic import BaseModel
-
+# TODO refactor
 class TagBase(BaseModel):
-    name: str
+    name: str # присобачить к моим схемам
 
 class TagCreate(TagBase):
     pass
@@ -14,11 +14,4 @@ class Tag(TagBase):
     class Config:
         from_attributes = True
 
-class PublicationTag(TagBase):
-    pass
 
-class PublicationTagCreate(TagCreate):
-    pass
-
-class PublicationTag(Tag):
-    pass

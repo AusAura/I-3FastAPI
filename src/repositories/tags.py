@@ -5,6 +5,7 @@ from src.database.models import Tag, Publication
 from src.schemas.tags import TagCreate, PublicationTagCreate
 from typing import List
 
+
 async def create_or_get_tags(tag_names: List[str], db: AsyncSession) -> List[Tag]:
     """
     Create new tags if they don't exist, or retrieve existing tags by name.
@@ -18,6 +19,7 @@ async def create_or_get_tags(tag_names: List[str], db: AsyncSession) -> List[Tag
         tags.append(tag)
     return tags
 
+
 async def get_tag_by_name(tag_name: str, db: AsyncSession) -> Tag | None:
     """
     Retrieve a tag by name.
@@ -26,15 +28,17 @@ async def get_tag_by_name(tag_name: str, db: AsyncSession) -> Tag | None:
     tag = await db.execute(stmt)
     return tag.scalar_one_or_none()
 
+
 async def create_tag(tag: TagCreate, db: AsyncSession) -> Tag:
     """
     Create a new tag.
     """
-    tag_db = Tag(**tag.dict())
+    tag_db = Tag(name=tag.name)  # TODO
     db.add(tag_db)
     await db.commit()
     await db.refresh(tag_db)
     return tag_db
+
 
 async def add_tags_to_photo(publication_id: int, tags: List[PublicationTagCreate], db: AsyncSession) -> List[Tag]:
     """
@@ -52,6 +56,7 @@ async def add_tags_to_photo(publication_id: int, tags: List[PublicationTagCreate
 
     return publication.tags
 
+
 async def get_publication_by_id(publication_id: int, db: AsyncSession) -> Publication | None:
     """
     Retrieve a publication by ID.
@@ -59,4 +64,3 @@ async def get_publication_by_id(publication_id: int, db: AsyncSession) -> Public
     stmt = select(Publication).filter_by(id=publication_id)
     publication = await db.execute(stmt)
     return publication.scalar_one_or_none()
-

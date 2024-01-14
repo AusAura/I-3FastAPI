@@ -19,6 +19,7 @@ async def create_publication(body: PublicationCreate, img_body: PubImageSchema, 
 
     pub_img = await create_pub_img(img_body, db)
     publication = Publication(**body.model_dump(exclude_unset=True), user=user, image=pub_img)
+    # TODO add_tags_topublication(body.tags, pub_id, db)
     db.add(publication)
     await db.commit()
     await db.refresh(publication)
@@ -50,7 +51,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate, 
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
     publication = publication.scalar_one_or_none()
-
+    # TODO add_tags_topublication(body.tags, pub_id, db)
     if publication is not None:
         for field, value in body.model_dump(exclude_unset=True).items():
             setattr(publication, field, value)
