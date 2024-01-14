@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     REDIS_DOMAIN: str = "localhost"
     REDIS_PORT: int = 6379
-    REDIS_PASSWORD: int = 123456
+    REDIS_PASSWORD: str = '123456'
 
     CLOUDINARY_NAME: str = "cloud_name"
     CLOUDINARY_API_KEY: int = 123456
