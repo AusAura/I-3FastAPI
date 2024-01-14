@@ -1,5 +1,5 @@
 import enum
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
@@ -32,6 +32,20 @@ class User(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+
+class PublicationTagAssociation(Base):
+    __tablename__ = "publication_tag"
+
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
 
 class Publication(Base):
     __tablename__ = "publications"
@@ -46,6 +60,8 @@ class Publication(Base):
     # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
 
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
+
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
     # cls Comment  __tablename__ = "comments"     OneToMany relationship
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
