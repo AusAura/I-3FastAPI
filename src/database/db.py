@@ -34,5 +34,5 @@ sessionmanager = DatabaseSessionManager(SQLALCHEMY_DATABASE_URL)
 
 # Dependency
 async def get_db() -> AsyncSession:
-    with sessionmanager.session() as session:
+    async with sessionmanager.session() as session:
         yield session
