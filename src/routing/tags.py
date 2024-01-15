@@ -8,7 +8,7 @@ from src.repositories import tags as repository_tags
 from src.database.db import get_db
 from src.services.auth import auth_service
 from src.database.models import User
-from src.messages import *
+import src.messages as msg
 
 router = APIRouter(prefix='/tags', tags=['tags'])
 
@@ -28,7 +28,7 @@ async def get_tag(tag_id: int, db: AsyncSession = Depends(get_db), user: User = 
     if tag is not None:
         return tag
     else:
-        raise HTTPException(status_code=404, detail=TAG_NOT_FOUND)
+        raise HTTPException(status_code=404, detail=msg.TAG_NOT_FOUND)
 
 @router.get('/', response_model=List[TagPublication], description='Get all tags')
 async def get_tags(db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
@@ -42,4 +42,4 @@ async def edit_tag(tag_id: int, tag_update: TagUpdate, db: AsyncSession = Depend
     if edited_tag is not None:
         return edited_tag
     else:
-        raise HTTPException(status_code=404, detail=TAG_NOT_FOUND)
+        raise HTTPException(status_code=404, detail=msg.TAG_NOT_FOUND)

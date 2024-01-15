@@ -20,14 +20,15 @@ from src.routing.comments import router as comments_router
 from src.routing import auth
 from src.routing import publications
 from src.database.db import get_db
+
 # from src.services.auth import auth_service
 
 
 app = FastAPI()
 
-origins = [ 
+origins = [
     "http://localhost:8000"
-    ]
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,10 +46,12 @@ app.include_router(comments_router, prefix='/api')
 app.include_router(auth.router, prefix="/api")
 app.include_router(publications.router, prefix="/api")
 
-@app.get('/', dependencies=[]) # Depends(RateLimiter(times=2, seconds=5))
+
+@app.get('/', dependencies=[])  # Depends(RateLimiter(times=2, seconds=5))
 def read_root():
     return {'message': 'It works!'}
-  
+
+
 @app.get("/healthchecker")
 async def healthchecker(db: AsyncSession = Depends(get_db)):
     """
@@ -70,6 +73,7 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
+
 
 if __name__ == '__main__':
     uvicorn.run('main:app', port=8000, reload=True)

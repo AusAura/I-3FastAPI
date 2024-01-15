@@ -27,3 +27,6 @@ PUBLICATION_DELETED = "Publication deleted"
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
+
+# TAGS
+TAG_NOT_FOUND = "Tag not found"

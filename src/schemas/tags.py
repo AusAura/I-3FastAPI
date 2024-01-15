@@ -1,13 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class TagBase(BaseModel):
-    name: str
+    name: str = Field(min_length=3, max_length=15)
 
 class TagCreate(TagBase):
     pass
 
-class TagUpdate(BaseModel):
-    name: str
+class TagUpdate(TagBase):
+    pass
 
 class TagPublication(TagBase):
     id: int
