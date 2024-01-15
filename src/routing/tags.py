@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.tags import TagCreate, TagUpdate, TagResponse  # Update this import line
+from src.schemas.tags import TagCreate, TagUpdate, TagPublication
 from src.repositories import tags as repository_tags
 from src.database.db import get_db
 from src.services.auth import auth_service
@@ -12,7 +12,7 @@ from src.messages import *
 
 router = APIRouter(prefix='/tags', tags=['tags'])
 
-@router.post('/add', response_model=TagResponse, status_code=201, description='Add a new tag')
+@router.post('/add', response_model=TagPublication, status_code=201, description='Add a new tag')
 async def add_tag(tag: TagCreate, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     created_tag = await repository_tags.add_tag(tag, db)
     return created_tag
@@ -22,7 +22,7 @@ async def delete_tag(tag_id: int, db: AsyncSession = Depends(get_db), user: User
     await repository_tags.delete_tag(tag_id, db)
     return None
 
-@router.get('/{tag_id}', response_model=TagResponse, description='Get a tag by ID')
+@router.get('/{tag_id}', response_model=TagPublication, description='Get a tag by ID')
 async def get_tag(tag_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     tag = await repository_tags.get_tag(tag_id, db)
     if tag is not None:
@@ -30,12 +30,12 @@ async def get_tag(tag_id: int, db: AsyncSession = Depends(get_db), user: User = 
     else:
         raise HTTPException(status_code=404, detail=TAG_NOT_FOUND)
 
-@router.get('/', response_model=List[TagResponse], description='Get all tags')
+@router.get('/', response_model=List[TagPublication], description='Get all tags')
 async def get_tags(db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     tags = await repository_tags.get_tags(db)
     return tags
 
-@router.patch('/{tag_id}/edit', response_model=TagResponse, description='Edit a tag by ID')
+@router.patch('/{tag_id}/edit', response_model=TagPublication, description='Edit a tag by ID')
 async def edit_tag(tag_id: int, tag_update: TagUpdate, db: AsyncSession = Depends(get_db),
                    user: User = Depends(auth_service.get_current_user)):
     edited_tag = await repository_tags.edit_tag(tag_id, tag_update, db)

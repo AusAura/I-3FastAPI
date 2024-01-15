@@ -9,7 +9,7 @@ class TagCreate(TagBase):
 class TagUpdate(BaseModel):
     name: str
 
-class TagResponse(TagBase):
+class TagPublication(TagBase):
     id: int
 
     class Config:
