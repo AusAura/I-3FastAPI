@@ -47,6 +47,7 @@ class Tag(Base):
 
 class PublicationTagAssociation(Base):
     __tablename__ = "publication_tag"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True, nullable=False)
     tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True, nullable=False)
@@ -67,8 +68,7 @@ class Publication(Base):
                                              cascade="all, delete-orphan")
 
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
-                                             cascade="all, delete-orphan")
+    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications", lazy="joined")
 
     # cls Comment  __tablename__ = "comments"     OneToMany relationship
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication",

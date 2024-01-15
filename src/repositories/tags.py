@@ -1,35 +1,48 @@
 from sqlalchemy import select, update, delete, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import Tag, Publication
+from src.database.models import Tag, Publication, PublicationTagAssociation
 
-from src.schemas.tags import TagCreate, TagUpdate, TagBase
-from typing import List, Sequence
+from src.schemas.tags import TagBase, TagUpdate
+from typing import Sequence
 
 from src.utils.my_logger import logger
 
 
-async def add_tag(body_tag: TagBase, db: AsyncSession) -> Tag:
-    """
-    Add a new tag.
-    """
-    tag = Tag(name=body_tag.name)
-    db.add(tag)
-    await db.commit()
-    await db.refresh(tag)
-    return tag
+async def create_tags(body_tags: list[TagBase], db: AsyncSession):
+    tags = []
+    for body in body_tags:
+        # Check if the tag already exists
+        stmt = select(Tag).where(Tag.name == body.name)
+        result = await db.execute(stmt)
+        tag = result.scalar_one_or_none()
+
+        if tag is None:
+            # If the tag doesn't exist, create it
+            tag = Tag(name=body.name)
+            db.add(tag)
+            await db.commit()
+            await db.refresh(tag)
+        tags.append(tag)
+        logger.info(f'tag created: {tag}')
+    return tags
 
 
-async def add_tags_to_publication(tags: list[TagBase], publication, db: AsyncSession):
-    """
-    Add tags to new publication.
-    """
-    tags: list[Tag] = [await add_tag(tag, db) for tag in tags]
-    logger.debug(f'Add tags: {tags} to publication: {publication}')
-
-    publication.tags.extend(tags)
-
+async def create_publication_tag_association(publication: Publication, tags: list[Tag], db: AsyncSession):
+    for tag in tags:
+        await db.refresh(tag)
+        await db.refresh(publication)
+        publication_tag = PublicationTagAssociation(publication_id=publication.id, tag_id=tag.id)
+        db.add(publication_tag)
+        await db.commit() # TODO что то с этим делать
+    await db.refresh(publication)
     return publication
+
+
+
+
+
+
 
 
 async def delete_tag(tag_id: int, db: AsyncSession) -> None:

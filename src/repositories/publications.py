@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
-from src.repositories.tags import add_tags_to_publication
+from src.repositories.tags import create_tags, create_publication_tag_association
 from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate
 from src.schemas.tags import TagBase
 from src.utils.my_logger import logger
@@ -20,17 +20,21 @@ async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
 async def create_publication(body: PublicationCreate, img_body: PubImageSchema, db: AsyncSession, user: User):
 
     pub_img = await create_pub_img(img_body, db)
-    publication = Publication(**body.model_dump(exclude_unset=True, exclude={"tags"}), user=user, image=pub_img)
+    publication = Publication(**body.model_dump(exclude_unset=True, exclude={'tags'}), user=user, image=pub_img)
     logger.info(f'tags: {body.tags}')
-    publication = await add_tags_to_publication(body.tags, publication, db)
+
+    tags = await create_tags(body.tags, db)
+
     db.add(publication)
     await db.commit()
     await db.refresh(publication)
+
+    publication = await create_publication_tag_association(publication, tags, db)
+
     return publication
 
 
 async def get_publications(limit: int, offset: int, db: AsyncSession, user: User):
-
     stmt = (select(Publication).filter_by(user=user)
             .offset(offset).limit(limit)
             .order_by(Publication.created_at.desc()))
@@ -41,7 +45,6 @@ async def get_publications(limit: int, offset: int, db: AsyncSession, user: User
 
 
 async def get_publication(publication_id: int, db: AsyncSession, user: User):
-
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
 
@@ -49,7 +52,6 @@ async def get_publication(publication_id: int, db: AsyncSession, user: User):
 
 
 async def update_text_publication(publication_id: int, body: PublicationUpdate, db: AsyncSession, user: User):
-
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
     publication = publication.scalar_one_or_none()
@@ -65,7 +67,6 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate, 
 
 
 async def delete_publication(publication_id: int, db: AsyncSession, user: User):
-
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
     publication = publication.scalar_one_or_none()
@@ -75,5 +76,3 @@ async def delete_publication(publication_id: int, db: AsyncSession, user: User):
         await db.commit()
 
     return publication
-
-
