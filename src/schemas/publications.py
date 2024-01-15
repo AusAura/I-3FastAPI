@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from tags import TagPublication
+from src.schemas.tags import TagPublication
 
 
 class TempImage(BaseModel):
