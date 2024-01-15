@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from tags import TagPublication
 
 
 class TempImage(BaseModel):
@@ -15,7 +16,7 @@ class PubImageSchema(TempImage):
 class PublicationSchema(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=50)
     description: Optional[str] = Field(None, min_length=1, max_length=255)
-    # tags: Optional[list[str]] = Field(None, max_items=5)  # TODO  Optional[list[Tag]]
+    tags: Optional[list['TagPublication']] = Field(None, max_items=5)
 
 
 class PublicationCreate(PublicationSchema):

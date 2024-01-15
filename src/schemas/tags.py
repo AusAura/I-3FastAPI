@@ -1,17 +1,17 @@
-
-
 from pydantic import BaseModel
-# TODO refactor
+
 class TagBase(BaseModel):
-    name: str # присобачить к моим схемам
+    name: str
 
 class TagCreate(TagBase):
     pass
 
-class Tag(TagBase):
+class TagUpdate(BaseModel):
+    name: str
+
+class TagResponse(TagBase):
     id: int
 
     class Config:
         from_attributes = True
-
 

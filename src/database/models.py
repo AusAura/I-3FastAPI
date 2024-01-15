@@ -1,5 +1,7 @@
 import enum
-from datetime import date, datetime
+from datetime import date
+from typing import List
+
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
@@ -64,7 +66,7 @@ class Publication(Base):
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
 
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
+    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
     # cls Comment  __tablename__ = "comments"     OneToMany relationship
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")

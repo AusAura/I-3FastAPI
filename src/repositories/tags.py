@@ -1,66 +1,57 @@
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import Tag, Publication
-from src.schemas.tags import TagCreate, PublicationTagCreate
+from src.database.models import Tag
+
+from src.schemas.tags import TagCreate, TagUpdate
 from typing import List
 
 
-async def create_or_get_tags(tag_names: List[str], db: AsyncSession) -> List[Tag]:
+async def add_tag(tag: TagCreate, db: AsyncSession) -> Tag:
     """
-    Create new tags if they don't exist, or retrieve existing tags by name.
+    Add a new tag.
     """
-    tags = []
-    for tag_name in tag_names:
-        tag = await get_tag_by_name(tag_name, db)
-        if tag is None:
-            # Tag doesn't exist, create a new one
-            tag = await create_tag(TagCreate(name=tag_name), db)
-        tags.append(tag)
-    return tags
-
-
-async def get_tag_by_name(tag_name: str, db: AsyncSession) -> Tag | None:
-    """
-    Retrieve a tag by name.
-    """
-    stmt = select(Tag).filter_by(name=tag_name)
-    tag = await db.execute(stmt)
-    return tag.scalar_one_or_none()
-
-
-async def create_tag(tag: TagCreate, db: AsyncSession) -> Tag:
-    """
-    Create a new tag.
-    """
-    tag_db = Tag(name=tag.name)  # TODO
+    tag_db = Tag(name=tag.name)
     db.add(tag_db)
     await db.commit()
     await db.refresh(tag_db)
     return tag_db
 
 
-async def add_tags_to_photo(publication_id: int, tags: List[PublicationTagCreate], db: AsyncSession) -> List[Tag]:
+async def delete_tag(tag_id: int, db: AsyncSession) -> None:
     """
-    Associate tags with a photo.
+    Delete a tag by ID.
     """
-    publication = await get_publication_by_id(publication_id, db)
-    if not publication:
-        return []
-
-    tag_objects = await create_or_get_tags([tag.name for tag in tags], db)
-
-    publication.tags.extend(tag_objects)
+    stmt = delete(Tag).where(Tag.id == tag_id)
+    await db.execute(stmt)
     await db.commit()
-    await db.refresh(publication)
-
-    return publication.tags
 
 
-async def get_publication_by_id(publication_id: int, db: AsyncSession) -> Publication | None:
+async def get_tag(tag_id: int, db: AsyncSession) -> Tag | None:
     """
-    Retrieve a publication by ID.
+    Get a tag by ID.
     """
-    stmt = select(Publication).filter_by(id=publication_id)
-    publication = await db.execute(stmt)
-    return publication.scalar_one_or_none()
+    stmt = select(Tag).filter_by(id=tag_id)
+    tag = await db.execute(stmt)
+    return tag.scalar_one_or_none()
+
+
+async def get_tags(db: AsyncSession) -> List[Tag]:
+    """
+    Get all tags.
+    """
+    stmt = select(Tag)
+    tags = await db.execute(stmt)
+    return tags.scalars().all()
+
+
+async def edit_tag(tag_id: int, tag_update: TagUpdate, db: AsyncSession) -> Tag | None:
+    """
+    Edit a tag by ID.
+    """
+    stmt = update(Tag).where(Tag.id == tag_id).values(tag_update.dict(exclude_unset=True))
+    await db.execute(stmt)
+    await db.commit()
+    return await get_tag(tag_id, db)
+
+
