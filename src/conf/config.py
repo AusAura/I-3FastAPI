@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: int = 123456
     CLOUDINARY_API_SECRET: str = "api_secret"
 
-    model_config = SettingsConfigDict(env_file='..env', extra='ignore', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore', env_file_encoding='utf-8')
 
 
-dot_env_file = pathlib.Path(__file__).parent.parent.parent / '..env'
+dot_env_file = pathlib.Path(__file__).parent.parent.parent / '.env'
 config = Settings(_env_file=dot_env_file)
