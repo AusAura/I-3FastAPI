@@ -3,13 +3,24 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class TempImage(BaseModel):
-    current_img: str
+class BaseImageSchema(BaseModel):
+    pass
 
 
-class PubImageSchema(TempImage):
+class CurrentImageSchema(BaseImageSchema):
+    current_img: Optional[str] = None
+
+
+class UpdatedImageSchema(BaseImageSchema):
     updated_img: Optional[str] = None
+
+
+class QrCodeImageSchema(BaseImageSchema):
     qr_code_img: Optional[str] = None
+
+
+class PubImageSchema(CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema):
+    pass
 
 
 class PublicationSchema(BaseModel):
