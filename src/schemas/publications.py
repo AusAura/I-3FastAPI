@@ -16,11 +16,11 @@ class PubImageSchema(TempImage):
 class PublicationSchema(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=50)
     description: Optional[str] = Field(None, min_length=1, max_length=255)
-    tags: Optional[list[TagBase]] = Field(None, max_items=5)
+
 
 
 class PublicationCreate(PublicationSchema):
-    pass
+    tags: Optional[list[TagBase]] = Field(None, max_items=5)
 
 
 class PublicationUpdate(PublicationSchema):
@@ -28,6 +28,7 @@ class PublicationUpdate(PublicationSchema):
 
 
 class PublicationResponse(PublicationSchema):
+    id: int
     image: PubImageSchema
 
     class Config:
