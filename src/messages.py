@@ -30,3 +30,4 @@ COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
 
 # TAGS
 TAG_NOT_FOUND = "Tag not found"
+TAGS_LIMIT_EXCEEDED = "Tags limit exceeded"

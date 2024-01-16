@@ -19,6 +19,7 @@ import uvicorn
 from src.routing.comments import router as comments_router
 from src.routing import auth
 from src.routing import publications
+from src.routing import tags
 from src.database.db import get_db
 
 # from src.services.auth import auth_service
@@ -45,6 +46,7 @@ app.add_middleware(
 app.include_router(comments_router, prefix='/api')
 app.include_router(auth.router, prefix="/api")
 app.include_router(publications.router, prefix="/api")
+app.include_router(tags.router, prefix="/api")
 
 
 @app.get('/', dependencies=[])  # Depends(RateLimiter(times=2, seconds=5))
