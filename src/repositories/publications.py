@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
-from src.repositories.tags import create_tags, create_publication_tag_association
+from src.repositories.tags import create_tags, append_tags_to_publication
 from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate
 from src.schemas.tags import TagBase
 from src.utils.my_logger import logger
@@ -21,15 +21,13 @@ async def create_publication(body: PublicationCreate, img_body: PubImageSchema, 
 
     pub_img = await create_pub_img(img_body, db)
     publication = Publication(**body.model_dump(exclude_unset=True, exclude={'tags'}), user=user, image=pub_img)
-    logger.info(f'tags: {body.tags}')
 
     tags = await create_tags(body.tags, db)
+    publication = await append_tags_to_publication(publication, tags)
 
     db.add(publication)
     await db.commit()
     await db.refresh(publication)
-
-    publication = await create_publication_tag_association(publication, tags, db)
 
     return publication
 

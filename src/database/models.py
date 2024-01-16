@@ -48,9 +48,8 @@ class Tag(Base):
 class PublicationTagAssociation(Base):
     __tablename__ = "publication_tag"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True, nullable=False)
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True, nullable=False)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
 
 
 class Publication(Base):
@@ -64,15 +63,13 @@ class Publication(Base):
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
     # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
-    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
-                                             cascade="all, delete-orphan")
+    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
 
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications", lazy="joined")
+    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
     # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication",
-                                              cascade="all, delete-orphan")
+    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
 
     # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
     # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
