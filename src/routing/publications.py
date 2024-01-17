@@ -2,7 +2,6 @@ import cloudinary
 import cloudinary.uploader
 
 from fastapi import APIRouter, Depends, File, UploadFile, Query, HTTPException
-from fastapi.openapi.models import Response
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -10,11 +9,17 @@ from starlette import status
 from src.conf.config import config
 from src.database.db import get_db
 from src.database.models import User
+
 from src.repositories import publications as repositories_publications
-from src.services.auth import auth_service
-from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationResponse, CurrentImageSchema, \
-    PublicationUpdate, UpdatedImageSchema, QrCodeImageSchema, PublicationUsersResponse, TransformationKey
+
+from src.schemas.publications import PublicationCreate, PublicationResponse,PublicationUpdate, PublicationUsersResponse
+from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
+    TransformationKey
+
 from src.services.qr_code import generate_qr_code_byte
+from src.services.auth import auth_service
+from src.services.cloud_image import cloud_img_service
+
 from src.utils.my_logger import logger
 import src.messages as msg
 

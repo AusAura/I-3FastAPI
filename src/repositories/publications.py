@@ -2,13 +2,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
-from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate, BaseImageSchema, \
-    QrCodeImageSchema
-from src.utils.my_logger import logger
+
+from src.schemas.publications import PublicationCreate, PublicationUpdate
+from src.schemas.pub_images import BaseImageSchema, PubImageSchema
 
 
 async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
-    # TODO unique или что-то в єтом вроде что би в папке темп под 1 постом била только 1 картинка
     pub_img = PubImage(**img_body.model_dump(exclude_unset=True))
     db.add(pub_img)
     await db.commit()
