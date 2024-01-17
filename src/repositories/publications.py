@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
-from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate, BaseImageSchema
+from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate, BaseImageSchema, \
+    QrCodeImageSchema
 from src.utils.my_logger import logger
 
 
@@ -64,6 +65,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate, 
 
 
 async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSession, user: User):
+
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
     publication = publication.scalar_one_or_none()

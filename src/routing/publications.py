@@ -151,6 +151,6 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     cloudinary.uploader.upload(img_bytes, public_id=f'QrCode/{user.email}', overwrite=True)  # TODO in services
     qr_code_img = cloudinary.CloudinaryImage(f'QrCode/{user.email}').build_url()  # TODO in services
 
-    # qr_code_img = QrCodeImageSchema(qr_code_img=qr_code_img)
-    # await update_image(publication_id, qr_code_img, db, user)
-    return {'qr_code_img': qr_code_img}
+    qr_code_img = QrCodeImageSchema(qr_code_img=qr_code_img)
+    await repositories_publications.update_image(publication_id, qr_code_img, db, user)
+    return qr_code_img
