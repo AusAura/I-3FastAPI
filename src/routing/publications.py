@@ -40,6 +40,13 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
+@router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema)
+async def transform_image(body, user: User = Depends(auth_service.get_current_user), img_service=None):
+    # TODO services for cloudinary
+    updated_image_url = img_service.transform_img(body.key, user.email)
+    return UpdatedImageSchema(**{"updated_img": updated_image_url})
+
+
 @router.post('/create', status_code=status.HTTP_201_CREATED, response_model=PublicationResponse)
 async def create_publication(body: PublicationCreate,
                              db: AsyncSession = Depends(get_db),
