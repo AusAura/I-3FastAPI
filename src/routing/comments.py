@@ -24,10 +24,9 @@ async def read_comments(publication_id: int, skip: int = 0, limit: int = 20, db:
     else:
         raise HTTPException(404)
 
-
 @router.get('/{publication_id}/comments/{comment_id}', response_model=CommentModelReturned, description='No more than 100 requests per minute', dependencies=[]) # Depends(RateLimiter(times=100, seconds=60))
-async def read_comment(publication_id: int, comment_id: int, db: AsyncSession = Depends(get_db)):
-    comment = await repository_comments.get_comment(publication_id, comment_id, db)
+async def read_comment(comment_id: int, db: AsyncSession = Depends(get_db)): ### publication_id: int, 
+    comment = await repository_comments.get_comment(comment_id, db) ### publication_id, 
     if comment:
         return comment
     else:
@@ -35,15 +34,15 @@ async def read_comment(publication_id: int, comment_id: int, db: AsyncSession = 
 
 
 @router.post('/{publication_id}/comments/add', response_model=CommentResponceAdded, status_code=status.HTTP_201_CREATED, description='No more than 100 requests per minute', dependencies=[]) # Depends(RateLimiter(times=100, seconds=60))
-async def add_comment(publication_id: int, body: CommentModelEditing, db: AsyncSession = Depends(get_db)): ## , current_user: User = Depends(auth_service.get_current_user)
-    current_user = auth_service.get_current_user() ## dummy call
+async def add_comment(publication_id: int, body: CommentModelEditing, db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)): ## 
+    # current_user = auth_service.get_current_user() ## dummy call
     comment = await repository_comments.add_comment(publication_id, current_user, body, db)
     return {'comment': comment, 'detail': COMMENT_SUCCESSFULLY_ADDED}
 
 
 @router.patch('/{publication_id}/comments/{comment_id}/edit', response_model=CommentResponceEdited, status_code=status.HTTP_202_ACCEPTED, description='No more than 10 requests per minute', dependencies=[]) #Depends(RateLimiter(times=10, seconds=60))
-async def edit_comment(comment_id: int, body: CommentModelEditing, db: AsyncSession = Depends(get_db)): #, current_user: User = Depends(auth_service.get_current_user) 
-    current_user = auth_service.get_current_user() ## dummy call
+async def edit_comment(comment_id: int, body: CommentModelEditing, db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)): #
+    # current_user = auth_service.get_current_user() ## dummy call
     comment = await repository_comments.edit_comment(comment_id, body, current_user, db) 
     if comment: 
         print(comment.id, comment.text, comment.created_at, comment.publication_id)
@@ -53,14 +52,15 @@ async def edit_comment(comment_id: int, body: CommentModelEditing, db: AsyncSess
 
 
 @router.delete('/{publication_id}/comments/{comment_id}/delete', response_model=CommentResponceDeleted, description='No more than 10 requests per minute', dependencies=[]) #Depends(RateLimiter(times=10, seconds=60))
-async def edit_comment(comment_id: int, db: AsyncSession = Depends(get_db)): ##, current_user: User = Depends(auth_service.get_current_user) 
-    current_user = auth_service.get_current_user() ## dummy call
+async def edit_comment(comment_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)): ##
+    # current_user = auth_service.get_current_user() ## dummy call
     if current_user.role == Role.admin:
         comment = await repository_comments.delete_comment(comment_id, current_user, db) 
     else: 
-        return HTTPException(403)
+        raise HTTPException(403)
     
     if comment: 
         return {'comment': comment, 'detail': COMMENT_SUCCESSFULLY_DELETED}
     else:
-        return HTTPException(404)
+        raise HTTPException(404)
+    
