@@ -45,3 +45,19 @@ async def delete_tags_from_publication(publication, tags: list[Tag], db: AsyncSe
                 logger.info(f'Tag deleted: {tag.name}')
     await db.commit()
     return publication
+
+async def get_tag_id_by_name(body, db):
+    stmt = select(Tag).where(Tag.name == body.name)
+    result = await db.execute(stmt)
+    tag = result.scalar_one_or_none()
+    return tag.id
+
+
+async def delete_tag_from_publication_by_name(publication_id, body, db):
+    tag_id = await get_tag_id_by_name(body, db)
+    stmt = select(PublicationTagAssociation).filter_by(tag_id=tag_id, publication_id=publication_id)
+    pub_as_tag = await db.execute(stmt)
+    pub_as_tag = pub_as_tag.scalar_one_or_none()
+    if pub_as_tag is not None:
+        await db.delete(pub_as_tag)
+        await db.commit()
