@@ -13,7 +13,7 @@ from src.database.models import User
 from src.repositories import publications as repositories_publications
 from src.services.auth import auth_service
 from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationResponse, CurrentImageSchema, \
-    PublicationUpdate, UpdatedImageSchema, QrCodeImageSchema
+    PublicationUpdate, UpdatedImageSchema, QrCodeImageSchema, PublicationUsersResponse
 from src.utils.my_logger import logger
 import src.messages as msg
 
@@ -54,7 +54,15 @@ async def create_publication(body: PublicationCreate,
     return publication
 
 
-@router.get('/get_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
+@router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
+async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+    publications = await repositories_publications.get_all_publications(limit, offset, db)
+
+    return publications
+
+
+@router.get('/get_my_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
 async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                            db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     publications = await repositories_publications.get_publications(limit, offset, db, user)

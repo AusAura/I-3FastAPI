@@ -35,6 +35,16 @@ async def get_publications(limit: int, offset: int, db: AsyncSession, user: User
     return publications.scalars().all()
 
 
+async def get_all_publications(limit: int, offset: int, db: AsyncSession):
+    stmt = (select(Publication)
+            .offset(offset).limit(limit)
+            .order_by(Publication.created_at.desc()))
+
+    publications = await db.execute(stmt)
+
+    return publications.scalars().all()
+
+
 async def get_publication(publication_id: int, db: AsyncSession, user: User):
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)

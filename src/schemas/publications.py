@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from src.schemas.user import UserResponse
+
 
 class BaseImageSchema(BaseModel):
     pass
@@ -38,7 +40,12 @@ class PublicationUpdate(PublicationSchema):
 
 
 class PublicationResponse(PublicationSchema):
+    id: int
     image: PubImageSchema
+
+
+class PublicationUsersResponse(PublicationResponse):
+    user: UserResponse
 
     class Config:
         from_attributes = True
