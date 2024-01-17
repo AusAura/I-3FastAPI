@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, field_validator
 
 from src.schemas.user import UserResponse
 
@@ -23,6 +23,16 @@ class QrCodeImageSchema(BaseImageSchema):
 
 class PubImageSchema(CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema):
     pass
+
+
+class TransformationKey(BaseModel):
+    key: str = Field(enum=["left", "right", "filter"])
+
+    @field_validator("key")
+    def validate_key(self, key: str) -> str:
+        if key not in ["left", "right", "filter"]:
+            raise ValueError(f"Invalid transformation key: {key}")
+        return key
 
 
 class PublicationSchema(BaseModel):

@@ -13,7 +13,7 @@ from src.database.models import User
 from src.repositories import publications as repositories_publications
 from src.services.auth import auth_service
 from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationResponse, CurrentImageSchema, \
-    PublicationUpdate, UpdatedImageSchema, QrCodeImageSchema, PublicationUsersResponse
+    PublicationUpdate, UpdatedImageSchema, QrCodeImageSchema, PublicationUsersResponse, TransformationKey
 from src.utils.my_logger import logger
 import src.messages as msg
 
@@ -40,8 +40,9 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
-@router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema)
-async def transform_image(body, user: User = Depends(auth_service.get_current_user), img_service=None):
+@router.get('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
+            description="Transform image keys: left, right, filter")
+async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user), img_service=None):
     # TODO services for cloudinary
     updated_image_url = img_service.transform_img(body.key, user.email)
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
@@ -147,16 +148,3 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     # TODO response response_model / redirect ?
     return {'qr_code_img': publication.image.qr_code_img}
 
-
-@router.post('/create_qr_code/{publication_id}', status_code=status.HTTP_200_OK, response_model=QrCodeImageSchema)
-async def create_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
-                         user: User = Depends(auth_service.get_current_user)):
-    publication = await repositories_publications.get_publication(publication_id, db, user)
-    if publication is None:
-        logger.warning(f'User {user.email} try get not exist publication {publication_id}')
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
-    # TODO  publication.image.current_img get url qr_code_img
-    # TODO save >> update_image(publication_id: int, body: BaseImageSchema, db: AsyncSession, user: User):
-    logger.info(f'User {user.email} get qr code {publication_id}')
-    # TODO response response_model / redirect ?
-    return {'qr_code_img': publication.image.qr_code_img}
