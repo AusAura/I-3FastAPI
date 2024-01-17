@@ -105,7 +105,7 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     return publication
 
 
-@router.put("/update_image/{publication_id}/{key}", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema)
+@router.post("/update_image/{publication_id}/{key}", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema)
 async def update_image(publication_id: int, key: str, db: AsyncSession = Depends(get_db),
                        user: User = Depends(auth_service.get_current_user)):
     # TODO services for cloudinary change image for KEY get url
@@ -133,7 +133,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     return {'qr_code_img': publication.image.qr_code_img}
 
 
-@router.put('/create_qr_code/{publication_id}', status_code=status.HTTP_200_OK, response_model=QrCodeImageSchema)
+@router.post('/create_qr_code/{publication_id}', status_code=status.HTTP_200_OK, response_model=QrCodeImageSchema)
 async def create_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
                          user: User = Depends(auth_service.get_current_user)):
     publication = await repositories_publications.get_publication(publication_id, db, user)
