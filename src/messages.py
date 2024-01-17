@@ -27,3 +27,6 @@ PUBLICATION_DELETED = "Publication deleted"
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
+
+
+USER_NOT_FOUND = 'User not found'
