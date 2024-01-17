@@ -30,7 +30,24 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
-    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
+                                             onupdate=func.now())
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+
+    publications = relationship("Publication", secondary="publication_tag", back_populates="tags")
+
+
+class PublicationTagAssociation(Base):
+    __tablename__ = "publication_tag"
+
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
 
 
 class Publication(Base):
@@ -43,28 +60,25 @@ class Publication(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
-    # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
-
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
-    # cls Comment  __tablename__ = "comments"     OneToMany relationship
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
-    #
-    # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    # tags: Mapped[list["Tag"]] = relationship("Tag", secondary="post_tag", back_populates="publications")
-    #
+
     # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
     # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
-    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
+                                             onupdate=func.now())
 
 
 class PubImage(Base):
     __tablename__ = "pub_images"
 
-    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), nullable=True)
     id: Mapped[int] = mapped_column(primary_key=True)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), nullable=True)
+
     current_img: Mapped[str] = mapped_column(String(255), nullable=False)
     updated_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
     qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
@@ -84,4 +98,5 @@ class Comment(Base):
     # emoji: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user) # reaction with the comment?
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
-    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
+                                             onupdate=func.now())
