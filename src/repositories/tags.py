@@ -32,25 +32,34 @@ async def append_tags_to_publication(publication, tags: list[Tag]):
     return publication
 
 
-async def delete_tags_from_publication(publication, tags: list[Tag], db: AsyncSession):
-    for tag in tags:
-        if tag in publication.tags:
-            publication.tags.remove(tag)
-            # TODO: Check if the tag is not associated with any other publications, delete if not
-            stmt = select(PublicationTagAssociation).filter_by(tag_id=tag.id)
-            result = await db.execute(stmt)
-            association_count = result.scalar()
-            if association_count == 0:
-                await db.delete(tag)
-                logger.info(f'Tag deleted: {tag.name}')
-    await db.commit()
-    return publication
-
 async def get_tag_id_by_name(body, db):
     stmt = select(Tag).where(Tag.name == body.name)
     result = await db.execute(stmt)
     tag = result.scalar_one_or_none()
     return tag.id
+
+
+async def get_tags_for_publication(publication_id, db):
+    tag_associations = await db.execute(
+        select(PublicationTagAssociation).filter_by(publication_id=publication_id)
+    )
+    tag_ids = [tag_association.tag_id for tag_association in tag_associations]
+    tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
+    return list(tags)
+
+
+async def delete_all_tags_from_publication(publication_id, db):
+
+    tag_associations = await db.execute(
+        select(PublicationTagAssociation).filter_by(publication_id=publication_id)
+    )
+    tag_ids = [tag_association.tag_id for tag_association in tag_associations]
+    tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
+    for tag_association in tag_associations:
+        await db.delete(tag_association)
+
+    for tag in tags:
+        await db.delete(tag)
 
 
 async def delete_tag_from_publication_by_name(publication_id, body, db):

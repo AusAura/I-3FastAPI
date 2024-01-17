@@ -37,28 +37,17 @@ async def create_tags(tags: list[TagCreate], db: AsyncSession = Depends(get_db),
     created_tags = await repositories_tags.create_tags(tags, db)
     return [{"id": tag.id, "name": tag.name} for tag in created_tags]
 
-# @router.post('/add_to_publication', status_code=status.HTTP_200_OK, response_model=list[TagPublication])
-# async def add_tags_to_publication(publication_id: int, tags: list[TagBase], db: AsyncSession = Depends(get_db),
-#                                   user: User = Depends(auth_service.get_current_user)):
-#     publication = await repositories_publications.get_publication(publication_id, db, user)
-#
-#     if publication is None:
-#         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
-#
-#     existing_tags = set(tag.name for tag in publication.tags)
-#     # existing_tags = set(tag.name for tag in publication.tags) if publication.tags else set()
-#
-#     new_tags = [tag for tag in tags if tag.name not in existing_tags]
-#
-#     if len(publication.tags) + len(new_tags) > 5:
-#         raise HTTPException(status_code=400, detail="Exceeded the maximum allowed tags for a publication (5).")
-#
-#     added_tags = await repositories_tags.create_tags(new_tags, db)
-#     publication = await repositories_tags.append_tags_to_publication(publication, added_tags)
-#
-#     return [{"id": tag.id, "name": tag.name} for tag in publication.tags]
-#
-#
+
+# @router.get("/tags_for_publication/{publication_id}", response_model=list[Tag])
+# async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depends(get_db)):
+#     tag_associations = await db.execute(
+#         select(PublicationTagAssociation).filter_by(publication_id=publication_id)
+#     )
+#     tag_ids = [tag_association.tag_id for tag_association in tag_associations]
+#     tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
+#     return list(tags)
+
+
 @router.delete('/remove_from_publication{publication_id}')
 async def remove_tags_from_publication(publication_id: int, body: TagBase, db: AsyncSession = Depends(get_db),
                                        user: User = Depends(auth_service.get_current_user)):
@@ -70,3 +59,17 @@ async def remove_tags_from_publication(publication_id: int, body: TagBase, db: A
     publication = await repositories_tags.delete_tag_from_publication_by_name(publication_id, body, db)
 
     return {"detail": body.name + " " + msg.TAG_ASSOCIATION_DELETED}
+
+
+# @router.delete('/remove_all__tags_from_publication/{publication_id}')
+# async def remove_all_tags_from_publication(publication_id: int, db: AsyncSession = Depends(get_db),
+#                                            user: User = Depends(auth_service.get_current_user)):
+#     publication = await repositories_publications.get_publication(publication_id, db, user)
+#
+#     if publication is None:
+#         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
+#
+#     # Assuming you have a repository method to delete all tags from a publication
+#     await repositories_tags.delete_all_tags_from_publication(publication_id, db)
+#
+#     return {"detail": "All tags removed from the publication with ID: " + str(publication_id)}
