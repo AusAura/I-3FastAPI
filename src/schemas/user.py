@@ -5,9 +5,8 @@ from src.database.models import Role
 
 class UserSchema(BaseModel):
     username: str = Field(min_length=3, max_length=50)
-    email: str
+    email: EmailStr = Field(pattern=r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+.[a-z]+$")
     password: str = Field(min_length=6, max_length=8)
-
 
 
 class UserResponse(BaseModel):
@@ -21,6 +20,15 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class UserProfile(BaseModel):
+    user: UserResponse
+    publications_count: int
+    usage_days: int
+
+    class Config:
+        from_attributes = True
+
+
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
@@ -29,4 +37,3 @@ class TokenSchema(BaseModel):
 
 class RequestEmail(BaseModel):
     email: str
-

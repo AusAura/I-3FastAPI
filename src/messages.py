@@ -6,12 +6,12 @@ INVALID_SCOPES = 'Invalid scope for token'
 
 # Auth
 NOT_VALID_CREDENTIALS = "Could not validate credentials"
-INVALID_TOKEN = "Invalid token for email verification"
+INVALID_TOKEN = "Invalid credentials"
 ACCOUNT_ALREADY_EXISTS = "Account already exists"
-INVALID_EMAIL = "Invalid email"
+INVALID_EMAIL = "Invalid credentials"
 EMAIL_NOT_CONFIRMED = "Email not confirmed"
-INVALID_PASSWORD = "Invalid password"
-INVALID_REFRESH_TOKEN = "Invalid refresh token"
+INVALID_PASSWORD = "Invalid credentials"
+INVALID_REFRESH_TOKEN = "Invalid credentials"
 VERIFICATION_ERROR = "Verification error"
 EMAIL_ALREADY_CONFIRMED = "Your email is already confirmed"
 EMAIL_CONFIRMED = "Email confirmed"
@@ -27,3 +27,7 @@ PUBLICATION_DELETED = "Publication deleted"
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
+
+# Profile
+USER_NOT_FOUND = "User not found"
+USER_ALREADY_EXISTS = "Username already exists, please try another one"
