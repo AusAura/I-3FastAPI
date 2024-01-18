@@ -22,8 +22,13 @@ PUBLICATION_NOT_FOUND = "Publication not found"
 PUBLICATIONS_EMPTY = "Publications is empty"
 PUBLICATION_CHANGED = "Publications changed"
 PUBLICATION_DELETED = "Publication deleted"
+PLEASE_UPLOAD_IMAGE = "Please upload an image"
 
 # COMMENTS
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
+
+# CLOUDINARY
+CLOUDINARY_ERROR = 'Cloudinary error'
+CLOUD_RESOURCE_NOT_FOUND = 'Resource not found'
