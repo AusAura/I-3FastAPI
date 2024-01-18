@@ -2,7 +2,8 @@ from enum import Enum
 from typing import BinaryIO, Any
 
 import cloudinary
-from cloudinary.api import delete_resources_by_prefix, update, resources
+from cloudinary.api import delete_resources_by_prefix, update
+from cloudinary.api_client.execute_request import Response
 from cloudinary.uploader import upload, destroy, rename
 from cloudinary.exceptions import Error as CloudinaryError
 
@@ -91,11 +92,29 @@ class CloudinaryService:
 
         return {postfix: result['secure_url']}
 
-    def round_face(self):
-        pass
+    def round_face(self) -> list[dict]:
+        transformation = [
+            {'gravity': "face", 'height': 200, 'width': 200, 'crop': "thumb"},
+            {'radius': "max"},
+            {'fetch_format': "auto"}
+        ]
+        return transformation
 
     def apply_transformation(self, key: str, cloud_id) -> str:
-        pass
+
+        # єту логику можно убрать валидация и условия снаружи в роутерах и в пайдентик модели
+        if key not in self.command_transformation:
+            raise CloudinaryServiceError(f"Invalid transformation key: {key}")
+        if cloud_id is None:
+            raise CloudinaryServiceError(msg.CLOUD_RESOURCE_NOT_FOUND)
+
+        transformation_func = self.command_transformation[key]
+        res = rename(
+
+            transformation=transformation_func()
+        )
+
+        return res['secure_url']
 
 
 cloud_img_service = CloudinaryService()

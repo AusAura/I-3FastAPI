@@ -31,7 +31,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
-@router.put('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
+@router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
             description="Transform image keys")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           cloud: CloudinaryService = Depends(cloud_img_service)):
