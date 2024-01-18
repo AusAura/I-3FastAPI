@@ -43,9 +43,13 @@ async def get_tags_for_publication(publication_id, db):
     tag_associations = await db.execute(
         select(PublicationTagAssociation).filter_by(publication_id=publication_id)
     )
-    tag_ids = [tag_association.tag_id for tag_association in tag_associations]
-    tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
-    return list(tags)
+
+    tag_ids = [tag_association.tag_id for tag_association in tag_associations.scalars().all()]
+    tags = []
+    for tag_id in tag_ids:
+        tag = await db.execute(select(Tag).filter_by(id=tag_id))
+        tags.append(tag.scalar_one_or_none())
+    return tags
 
 
 async def delete_all_tags_from_publication(publication_id, db):

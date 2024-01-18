@@ -38,14 +38,11 @@ async def create_tags(tags: list[TagCreate], db: AsyncSession = Depends(get_db),
     return [{"id": tag.id, "name": tag.name} for tag in created_tags]
 
 
-# @router.get("/tags_for_publication/{publication_id}", response_model=list[Tag])
-# async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depends(get_db)):
-#     tag_associations = await db.execute(
-#         select(PublicationTagAssociation).filter_by(publication_id=publication_id)
-#     )
-#     tag_ids = [tag_association.tag_id for tag_association in tag_associations]
-#     tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
-#     return list(tags)
+@router.get("/tags_for_publication/{publication_id}", status_code=status.HTTP_200_OK, response_model=list[TagBase])
+async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depends(get_db),
+                                   user: User = Depends(auth_service.get_current_user)):
+    tags = await repositories_tags.get_tags_for_publication(publication_id, db)
+    return tags
 
 
 @router.delete('/remove_from_publication{publication_id}')
