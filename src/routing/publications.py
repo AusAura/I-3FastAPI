@@ -9,7 +9,7 @@ from src.repositories import publications as repositories_publications
 
 from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, PublicationUsersResponse
 from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
-    TransformationKey, BaseImageSchema
+    TransformationKey
 
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
@@ -18,7 +18,7 @@ from src.services.cloud_image import cloud_img_service, CloudinaryService
 from src.utils.my_logger import logger
 import src.messages as msg
 
-router = APIRouter(prefix='/publication', tags=['publications'])
+router = APIRouter(prefix='/publications', tags=['publications'])
 
 
 @router.post('/upload_image', status_code=status.HTTP_201_CREATED, response_model=CurrentImageSchema)
@@ -31,7 +31,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
-@router.get('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
+@router.get('/transform_image/{key}', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
             description="Transform image keys: left, right, filter")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           img_service=None):
@@ -67,7 +67,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
     return publication
 
 
-@router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
+@router.get('/all', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                            db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     publications = await repositories_publications.get_all_publications(limit, offset, db)
@@ -75,7 +75,7 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
     return publications
 
 
-@router.get('/get_my_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
+@router.get('/all_my', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
 async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                            db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     publications = await repositories_publications.get_publications(limit, offset, db, user)
@@ -88,7 +88,7 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
     return publications
 
 
-@router.get('/get/{publication_id}', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
+@router.get('/{publication_id}', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
 async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                           user: User = Depends(auth_service.get_current_user)):
     publication = await repositories_publications.get_publication(publication_id, db, user)
@@ -101,7 +101,7 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     return publication
 
 
-@router.put('/update/{publication_id}', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
+@router.put('/{publication_id}/update_text', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
 async def update_text_publication(publication_id: int, body: PublicationUpdate,
                                   db: AsyncSession = Depends(get_db),
                                   user: User = Depends(auth_service.get_current_user)):
@@ -114,7 +114,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate,
     return publication
 
 
-@router.delete('/delete/{publication_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{publication_id}/delete', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user)):
     # TODO onecase delete image in table
@@ -126,7 +126,7 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     return publication
 
 
-@router.post("/update_image/{publication_id}/{key}", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema)
+@router.post("/{publication_id}/update_image/{key}", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema)
 async def update_image(publication_id: int, key: str, db: AsyncSession = Depends(get_db),
                        user: User = Depends(auth_service.get_current_user)):
     # TODO services for cloudinary change image for KEY get url
@@ -141,7 +141,7 @@ async def update_image(publication_id: int, key: str, db: AsyncSession = Depends
     return body
 
 
-@router.get('/qr_code/{publication_id}', status_code=status.HTTP_200_OK, response_model=QrCodeImageSchema)
+@router.get('/{publication_id}/qr_code', status_code=status.HTTP_200_OK, response_model=QrCodeImageSchema)
 async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
                       user: User = Depends(auth_service.get_current_user),
                       cloud: CloudinaryService = Depends(cloud_img_service)):
