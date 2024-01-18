@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import BinaryIO, Any
+from typing import BinaryIO, Any, Dict
 
 import cloudinary
 from cloudinary.api import delete_resources_by_prefix, update
@@ -92,12 +92,15 @@ class CloudinaryService:
 
         return {postfix: result['secure_url']}
 
-    def round_face(self) -> list[dict]:
-        transformation = [
-            {'gravity': "face", 'height': 200, 'width': 200, 'crop': "thumb"},
-            {'radius': "max"},
-            {'fetch_format': "auto"}
-        ]
+    @staticmethod
+    def round_face() -> dict[str, int | str]:
+        transformation = {
+            "gravity": "face",
+            "height": 200,
+            "width": 200,
+            "crop": "thumb",
+            "radius": "max",
+        }
         return transformation
 
     def apply_transformation(self, key: str, cloud_id) -> str:
@@ -109,12 +112,10 @@ class CloudinaryService:
             raise CloudinaryServiceError(msg.CLOUD_RESOURCE_NOT_FOUND)
 
         transformation_func = self.command_transformation[key]
-        res = rename(
+        res = cloudinary.CloudinaryImage(public_id=cloud_id).image(**transformation_func())
 
-            transformation=transformation_func()
-        )
-
-        return res['secure_url']
+        logger.debug(f"apply transformation: {res}|||{type(res)}")
+        return res
 
 
 cloud_img_service = CloudinaryService()

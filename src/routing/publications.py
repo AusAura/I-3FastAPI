@@ -32,7 +32,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 
 
 @router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
-            description="Transform image keys")
+             description="Transform image keys")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           cloud: CloudinaryService = Depends(cloud_img_service)):
 
@@ -51,7 +51,6 @@ async def transform_image(body: TransformationKey, user: User = Depends(auth_ser
 async def create_publication(body: PublicationCreate, db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user),
                              cloud: CloudinaryService = Depends(cloud_img_service)):
-
     if cloud.get_cloud_id(user.email, "current_img") is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
 
@@ -152,7 +151,6 @@ async def update_image(publication_id: int, key: str, db: AsyncSession = Depends
 async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
                       user: User = Depends(auth_service.get_current_user),
                       cloud: CloudinaryService = Depends(cloud_img_service)):
-
     publication = await repositories_publications.get_publication(publication_id, db, user)
     if publication is None:
         logger.warning(f'User {user.email} try get not exist publication {publication_id}')
@@ -160,7 +158,8 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
 
     img_url = publication.image.updated_img if publication.image.updated_img is not None else publication.image.current_img
     img_bytes = await generate_qr_code_byte(img_url)
-    qr_code_url = cloud.save_by_email(img_bytes, user.email, post_id=publication_id, folder="publications", postfix="qr_code_img")
+    qr_code_url = cloud.save_by_email(img_bytes, user.email, post_id=publication_id, folder="publications",
+                                      postfix="qr_code_img")
 
     qr_code_img = QrCodeImageSchema(qr_code_img=qr_code_url)
     await repositories_publications.update_image(publication_id, qr_code_img, db, user)
