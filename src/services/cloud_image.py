@@ -2,7 +2,7 @@ from enum import Enum
 from typing import BinaryIO, Any
 
 import cloudinary
-from cloudinary.api import delete_resources_by_prefix, update
+from cloudinary.api import delete_resources_by_prefix, update, resources
 from cloudinary.uploader import upload, destroy, rename
 from cloudinary.exceptions import Error as CloudinaryError
 
@@ -51,7 +51,11 @@ class CloudinaryService:
     def image_exists(self, email: str, postfix: str, post_id: int | None = None, folder: str | None = None) -> bool:
 
         if folder is None: folder = self.per_folder.temp.name
-        public_id = f"{email}/{folder}/{post_id}/{postfix}"
+
+        if folder not in self.per_folder.array():
+            raise CloudinaryServiceError(f"Folder '{folder}' not allowed")
+
+        public_id = f"{email}/{folder}/{postfix}" if post_id is None else f"{email}/{folder}/{post_id}/{postfix}"
 
         try:
             cloudinary.api.resource(public_id)
