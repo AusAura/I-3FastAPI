@@ -1,7 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.models import Tag, Publication, PublicationTagAssociation
+from sqlalchemy.exc import IntegrityError
+
+from src.database.models import Tag, Publication, PublicationTagAssociation, User
 from src.schemas.tags import TagBase, TagUpdate
+from src.repositories import publications as repositories_publications
 from src.utils.my_logger import logger
 
 
@@ -22,14 +25,15 @@ async def create_tags(body_tags: list[TagBase], db: AsyncSession):
     return tags
 
 
-async def append_tags_to_publication(publication, tags: list[Tag]):
-    # Limit to add maximum 5 tags
-    if len(publication.tags) + len(tags) > 5:
-        raise ValueError("Exceeded the maximum allowed tags for a publication (5).")
-
+async def tags_to_publication_by_id(publication_id: int, tags, db: AsyncSession):
     for tag in tags:
-        publication.tags.append(tag)
-    return publication
+        logger.info(f'Tags to publication: {type(tag)}')
+        try:
+            insert_stmt = insert(PublicationTagAssociation).values(publication_id=publication_id, tag_id=tag.id)
+            await db.commit()
+        except IntegrityError:
+            pass
+    return tags
 
 
 async def get_tag_id_by_name(body, db):
@@ -39,7 +43,7 @@ async def get_tag_id_by_name(body, db):
     return tag.id
 
 
-async def get_tags_for_publication(publication_id, db):
+async def get_tags_for_publication_id(publication_id, db):
     tag_associations = await db.execute(
         select(PublicationTagAssociation).filter_by(publication_id=publication_id)
     )
@@ -49,21 +53,14 @@ async def get_tags_for_publication(publication_id, db):
     for tag_id in tag_ids:
         tag = await db.execute(select(Tag).filter_by(id=tag_id))
         tags.append(tag.scalar_one_or_none())
+        # await db.refresh(tag)
     return tags
 
 
 async def delete_all_tags_from_publication(publication_id, db):
-
-    tag_associations = await db.execute(
-        select(PublicationTagAssociation).filter_by(publication_id=publication_id)
-    )
-    tag_ids = [tag_association.tag_id for tag_association in tag_associations]
-    tags = await db.execute(select(Tag).filter(Tag.id.in_(tag_ids)))
-    for tag_association in tag_associations:
-        await db.delete(tag_association)
-
-    for tag in tags:
+    for tag in await get_tags_for_publication_id(publication_id, db):
         await db.delete(tag)
+        await db.commit()
 
 
 async def delete_tag_from_publication_by_name(publication_id, body, db):
