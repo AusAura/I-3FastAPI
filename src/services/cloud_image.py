@@ -85,7 +85,7 @@ class CloudinaryService:
         from_public_id = f"{email}/{self.per_folder.temp.name}/{postfix}"
         to_public_id = f"{email}/{self.per_folder.publications.name}/{post_id}/{postfix}"
 
-        if self.image_exists(email, postfix, post_id):
+        if self.image_exists(email, postfix):
             result = rename(from_public_id=from_public_id, to_public_id=to_public_id)
         else:
             return {postfix: None}
