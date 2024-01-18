@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.services.cloud_image import TRANSFORMATION_KEYS
+
 
 class BaseImageSchema(BaseModel):
     pass
@@ -28,6 +30,6 @@ class TransformationKey(BaseModel):
 
     @field_validator("key")
     def validate_key(cls, key: str) -> str:   # noqa
-        if key not in ["left", "right", "filter"]:
-            raise ValueError(f"Invalid transformation key: {key}")
+        if key not in TRANSFORMATION_KEYS:
+            raise KeyError(f"Invalid transformation key: {key}")
         return key

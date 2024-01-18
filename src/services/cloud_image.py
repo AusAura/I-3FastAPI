@@ -38,9 +38,7 @@ class CloudinaryService:
         )
 
         self.command_transformation = {
-            "left": self.move_left,
-            "right": self.move_right,
-            "filter": self.append_filter
+            "round_face": self.round_face,
         }
 
     per_folder = PermissionsFolder
@@ -48,7 +46,8 @@ class CloudinaryService:
     def __call__(self):
         return self
 
-    def image_exists(self, email: str, postfix: str, post_id: int | None = None, folder: str | None = None) -> bool:
+    def get_cloud_id(self, email: str, postfix: str, post_id: int | None = None,
+                     folder: str | None = None) -> str | None:
 
         if folder is None: folder = self.per_folder.temp.name
 
@@ -59,10 +58,10 @@ class CloudinaryService:
 
         try:
             cloudinary.api.resource(public_id)
-            return True
+            return public_id
         except CloudinaryError as err:
             if msg.CLOUD_RESOURCE_NOT_FOUND in str(err):
-                return False
+                return None
             raise CloudinaryServiceError(str(err))
 
     def save_by_email(self, file: BinaryIO, email: str, postfix: str, post_id: int | None = None,
@@ -85,31 +84,18 @@ class CloudinaryService:
         from_public_id = f"{email}/{self.per_folder.temp.name}/{postfix}"
         to_public_id = f"{email}/{self.per_folder.publications.name}/{post_id}/{postfix}"
 
-        if self.image_exists(email, postfix):
+        if self.get_cloud_id(email, postfix):
             result = rename(from_public_id=from_public_id, to_public_id=to_public_id)
         else:
             return {postfix: None}
 
         return {postfix: result['secure_url']}
 
-    @staticmethod
-    def move_left(email, public_id):
-        CloudinaryService.apply_transformation(public_id, {'angle': 90})
+    def round_face(self):
+        pass
 
-    @staticmethod
-    def move_right(email, public_id):
-        CloudinaryService.apply_transformation(public_id, {'angle': -90})
-
-    @staticmethod
-    def append_filter(email, public_id, filter_name):
-        CloudinaryService.apply_transformation(public_id, {'effect': filter_name})
-
-    @staticmethod
-    def apply_transformation(public_id, transformation):
-        update(
-            public_id=public_id,
-            transformation=transformation
-        )
+    def apply_transformation(self, key: str, cloud_id) -> str:
+        pass
 
 
 cloud_img_service = CloudinaryService()

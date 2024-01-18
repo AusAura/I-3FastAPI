@@ -31,12 +31,19 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
-@router.get('/transform_image/{key}', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
-            description="Transform image keys: left, right, filter")
+@router.put('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
+            description="Transform image keys")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
-                          img_service=None):
-    # TODO services for cloudinary
-    updated_image_url = img_service.transform_img(body.key, user.email)
+                          cloud: CloudinaryService = Depends(cloud_img_service)):
+
+    # TODO может єту логику лучше убрать внутрь класса ? или оставить тут?
+    if (cloud_id := cloud.get_cloud_id(email=user.email, postfix="updated_img")) is None:
+        cloud_id = cloud.get_cloud_id(email=user.email, postfix="current_img")
+        if cloud_id is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
+
+    updated_image_url = cloud.apply_transformation(key=body.key, cloud_id=cloud_id)
+
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
 
 
@@ -45,7 +52,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
                              user: User = Depends(auth_service.get_current_user),
                              cloud: CloudinaryService = Depends(cloud_img_service)):
 
-    if not cloud.image_exists(user.email, "current_img"):
+    if cloud.get_cloud_id(user.email, "current_img") is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
 
     img_body = PubImageSchema(**{"current_img": "костыль", "updated_img": None, "qr_code_img": None})
