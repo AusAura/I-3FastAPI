@@ -6,7 +6,7 @@ from src.database.models import Role
 class UserSchema(BaseModel):
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr = Field(pattern=r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+.[a-z]+$")
-    password: str = Field(min_length=6, max_length=8)
+    password: str = Field(min_length=6, max_length=15)
 
 
 class UserResponse(BaseModel):
