@@ -64,12 +64,10 @@ class Publication(Base):
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
     # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
+
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
-    # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
-
-    # cls Comment  __tablename__ = "comments"     OneToMany relationship
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
 
     # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
@@ -83,8 +81,9 @@ class Publication(Base):
 class PubImage(Base):
     __tablename__ = "pub_images"
 
-    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), nullable=True)
     id: Mapped[int] = mapped_column(primary_key=True)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), nullable=True)
+
     current_img: Mapped[str] = mapped_column(String(255), nullable=False)
     updated_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
     qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)

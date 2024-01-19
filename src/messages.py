@@ -22,6 +22,7 @@ PUBLICATION_NOT_FOUND = "Publication not found"
 PUBLICATIONS_EMPTY = "Publications is empty"
 PUBLICATION_CHANGED = "Publications changed"
 PUBLICATION_DELETED = "Publication deleted"
+PLEASE_UPLOAD_IMAGE = "Please upload an image"
 
 # COMMENTS
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
@@ -31,3 +32,7 @@ COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
 # Profile
 USER_NOT_FOUND = "User not found"
 USER_ALREADY_EXISTS = "Username already exists, please try another one"
+
+# CLOUDINARY
+CLOUDINARY_ERROR = 'Cloudinary error'
+CLOUD_RESOURCE_NOT_FOUND = 'Resource not found'

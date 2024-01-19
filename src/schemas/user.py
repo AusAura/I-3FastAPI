@@ -9,7 +9,6 @@ class UserSchema(BaseModel):
     password: str = Field(min_length=6, max_length=15)
     about: str = Field(min_length=6, max_length=500)
 
-
 class UserResponse(BaseModel):
     id: int = 1
     username: str
