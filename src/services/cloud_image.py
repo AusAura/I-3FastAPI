@@ -2,10 +2,12 @@ from enum import Enum
 from typing import BinaryIO, Any, Dict
 
 import cloudinary
+from cloudinary import uploader
 from cloudinary.api import delete_resources_by_prefix, update
 from cloudinary.api_client.execute_request import Response
 from cloudinary.uploader import upload, destroy, rename
 from cloudinary.exceptions import Error as CloudinaryError
+from cloudinary.utils import cloudinary_url
 
 from src.conf.config import config
 from src.utils.my_logger import logger
@@ -103,19 +105,18 @@ class CloudinaryService:
         }
         return transformation
 
-    def apply_transformation(self, key: str, cloud_id) -> str:
+    def apply_transformation(self, key: str, cloud_current_id, cloud_update_id) -> str:
 
-        # єту логику можно убрать валидация и условия снаружи в роутерах и в пайдентик модели
         if key not in self.command_transformation:
             raise CloudinaryServiceError(f"Invalid transformation key: {key}")
+
+        cloud_id = cloud_update_id if cloud_update_id is not None else cloud_current_id
         if cloud_id is None:
-            raise CloudinaryServiceError(msg.CLOUD_RESOURCE_NOT_FOUND)
+            raise CloudinaryServiceError(msg.PLEASE_UPLOAD_IMAGE)
 
-        transformation_func = self.command_transformation[key]
-        res = cloudinary.CloudinaryImage(public_id=cloud_id).image(**transformation_func())
-
-        logger.debug(f"apply transformation: {res}|||{type(res)}")
-        return res
+        res_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key)())
+        upload(res_url, public_id=cloud_update_id, overwrite=True)
+        return res_url
 
 
 cloud_img_service = CloudinaryService()
