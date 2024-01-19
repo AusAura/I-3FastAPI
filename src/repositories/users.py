@@ -9,6 +9,13 @@ from src.schemas.user import UserSchema
 from src.utils.my_logger import logger
 
 
+async def get_user_by_id(user_id: int, db: AsyncSession):
+    stmt = select(User).filter_by(id=user_id)
+    user = await db.execute(stmt)
+    user = user.scalar_one_or_none()
+    return user
+
+
 async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
 
     stmt = select(User).filter_by(email=email)

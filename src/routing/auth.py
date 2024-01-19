@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.messages import ACCOUNT_ALREADY_EXISTS, INVALID_EMAIL, EMAIL_NOT_CONFIRMED, INVALID_PASSWORD, \
-    VERIFICATION_ERROR, EMAIL_ALREADY_CONFIRMED, EMAIL_CONFIRMED, CHECK_EMAIL, INVALID_REFRESH_TOKEN
+    VERIFICATION_ERROR, EMAIL_ALREADY_CONFIRMED, EMAIL_CONFIRMED, CHECK_EMAIL, INVALID_REFRESH_TOKEN, USER_IS_BLOCK
 from src.repositories import users as repositories_users
 from src.schemas.user import UserSchema, TokenSchema, UserResponse, RequestEmail
 from src.services.email import send_email
@@ -34,6 +34,8 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_EMAIL)
     if not user.confirmed:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=EMAIL_NOT_CONFIRMED)
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=USER_IS_BLOCK)
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_PASSWORD)
 
@@ -45,7 +47,8 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token), db: AsyncSession = Depends(get_db)):
+async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
+                 db: AsyncSession = Depends(get_db)):
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repositories_users.get_user_by_email(email, db)
@@ -54,7 +57,6 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh
         return {"message": "Logged out successfully"}
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_REFRESH_TOKEN)
-
 
 
 @router.get('/refresh_token', response_model=TokenSchema)
@@ -95,3 +97,15 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
     if user:
         background_tasks.add_task(send_email, user.email, user.username, str(request.base_url))
     return {"message": CHECK_EMAIL}
+
+
+@router.post("/block_user/{user_id}")
+async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(get_db)):
+    user = await repositories_users.get_user_by_id(user_id, db)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.is_active = is_active
+    await db.commit()
+
+    return {"message": "User status updated successfully"}
