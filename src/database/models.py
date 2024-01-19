@@ -1,5 +1,7 @@
 import enum
 from datetime import date
+from typing import List
+
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
@@ -25,6 +27,7 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
     refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
+    is_revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
@@ -41,7 +44,7 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
-    publications = relationship("Publication", secondary="publication_tag", back_populates="tags")
+    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
 class PublicationTagAssociation(Base):
@@ -65,10 +68,11 @@ class Publication(Base):
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
 
     # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
+    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
+                                             lazy="joined")
 
     # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
+    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
 
     # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
     # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
@@ -81,9 +85,8 @@ class Publication(Base):
 class PubImage(Base):
     __tablename__ = "pub_images"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), nullable=True)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
     current_img: Mapped[str] = mapped_column(String(255), nullable=False)
     updated_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
     qr_code_img: Mapped[str] = mapped_column(String(255), default=None, nullable=True)
