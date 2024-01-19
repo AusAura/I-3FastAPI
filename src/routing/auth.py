@@ -54,6 +54,8 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh
     user = await repositories_users.get_user_by_email(email, db)
     if user and user.refresh_token == token:
         await repositories_users.update_token(user, None, db)
+        user.is_revoked = True
+        await db.commit()
         return {"message": "Logged out successfully"}
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_REFRESH_TOKEN)
@@ -65,7 +67,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repositories_users.get_user_by_email(email, db)
-    if user.refresh_token != token:
+    if user.refresh_token != token or user.is_revoked:
         await repositories_users.update_token(user, None, db)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_REFRESH_TOKEN)
 
