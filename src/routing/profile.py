@@ -19,7 +19,7 @@ from src.schemas.user import UserProfile, UserResponse
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repositories import profile as repositories_profile
-from src.services.profile import calculate_usage_days
+
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 cloudinary.config(
