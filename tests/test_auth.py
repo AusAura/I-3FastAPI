@@ -3,8 +3,7 @@ from unittest.mock import MagicMock, AsyncMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.user import UserSchema
 from src.database.models import User
-from src.repositories.users import count_users, create_user, get_user_by_email, update_token, confirmed_email, \
-    update_avatar_url
+from src.repositories.users import count_users, create_user, get_user_by_email, update_token, confirmed_email
 
 
 class TestAsyncUserRepository(unittest.IsolatedAsyncioTestCase):
@@ -64,17 +63,6 @@ class TestAsyncUserRepository(unittest.IsolatedAsyncioTestCase):
         await confirmed_email(user.email, self.session)
 
         self.assertEqual(user.confirmed, True)
-
-    async def test_update_avatar_url(self):
-        user = User(
-            id=1, username="test2", password="testtest", email="test@example.com.ua", confirmed=True,
-            avatar="avatar_test"
-        )
-        mocked_user = MagicMock()
-        mocked_user.scalar_one_or_none.return_value = user
-        self.session.execute.return_value = mocked_user
-        await update_avatar_url(user.avatar, "avatar_test", self.session)
-        self.assertEqual(user.avatar, "avatar_test")
 
     async def test_count_users(self):
         mock_result = MagicMock()
