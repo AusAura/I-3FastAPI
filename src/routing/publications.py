@@ -13,7 +13,8 @@ from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedIm
 
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
-from src.services.cloud_image import cloud_img_service, CloudinaryService, CloudinaryResourceNotFoundError
+from src.services.cloud_image import cloud_img_service, CloudinaryService, CloudinaryResourceNotFoundError, \
+    TRANSFORMATION_KEYS
 
 from src.utils.my_logger import logger
 import src.messages as msg
@@ -32,15 +33,17 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 
 
 @router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
-             description="Transform image keys")
+             description=f"Transform image keys : {' '.join(TRANSFORMATION_KEYS)}")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           cloud: CloudinaryService = Depends(cloud_img_service)):
 
     try:
-        updated_image_url = cloud.apply_transformation(key=body.key, email=user.email,
-                                                       current_postfix="current_img", updated_postfix="updated_img")
-    except CloudinaryResourceNotFoundError as err:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
+        updated_image_url = cloud.apply_transformation(
+            key=body.key, email=user.email,
+            current_postfix="current_img", updated_postfix="updated_img"
+        )
+    except CloudinaryResourceNotFoundError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
 
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
 

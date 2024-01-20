@@ -47,6 +47,7 @@ class CloudinaryService:
 
         self.command_transformation = {
             "round_face": self.round_face,
+            "border": self.border,
         }
 
     per_folder = PermissionsFolder
@@ -100,13 +101,23 @@ class CloudinaryService:
         return {postfix: result['secure_url']}
 
     @staticmethod
-    def round_face() -> dict[str, int | str]:
+    def round_face() -> dict:
         transformation = {
             "gravity": "face",
             "height": 200,
             "width": 200,
             "crop": "thumb",
             "radius": "max",
+        }
+        return transformation
+
+    @staticmethod
+    def border() -> dict:
+        transformation = {
+            'aspect_ratio': "1.0",
+            'height': 250,
+            'crop': "fill",
+            'border': "5px_solid_lightblue",
         }
         return transformation
 

@@ -67,7 +67,7 @@ async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSess
 
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
-    publication = publication.scalar_one_or_none()
+    publication = publication.unique().scalar_one_or_none()
 
     if publication is not None:
         for field, value in body.model_dump(exclude_unset=True).items():
