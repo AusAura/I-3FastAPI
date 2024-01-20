@@ -13,7 +13,7 @@ from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedIm
 
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
-from src.services.cloud_image import cloud_img_service, CloudinaryService
+from src.services.cloud_image import cloud_img_service, CloudinaryService, CloudinaryResourceNotFoundError
 
 from src.utils.my_logger import logger
 import src.messages as msg
@@ -36,12 +36,11 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           cloud: CloudinaryService = Depends(cloud_img_service)):
 
-    cloud_current_id = cloud.get_cloud_id(email=user.email, postfix="current_img")
-    cloud_update_id = cloud.get_cloud_id(email=user.email, postfix="updated_img")
-    if (cloud_update_id is None) and (cloud_current_id is None):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
-
-    updated_image_url = cloud.apply_transformation(key=body.key, cloud_current_id=cloud_current_id, cloud_update_id=cloud_update_id)
+    try:
+        updated_image_url = cloud.apply_transformation(key=body.key, email=user.email,
+                                                       current_postfix="current_img", updated_postfix="updated_img")
+    except CloudinaryResourceNotFoundError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
 

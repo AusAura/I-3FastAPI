@@ -22,6 +22,11 @@ class CloudinaryServiceError(Exception):
         self.message = message
 
 
+class CloudinaryResourceNotFoundError(CloudinaryServiceError):
+    def __init__(self, message: str, *args: Any) -> None:
+        super().__init__(message, *args)
+
+
 class PermissionsFolder(Enum):
     temp = "temp"
     publications = "publications"
@@ -67,7 +72,7 @@ class CloudinaryService:
                 return None
             raise CloudinaryServiceError(str(err))
 
-    def save_by_email(self, file: BinaryIO, email: str, postfix: str, post_id: int | None = None,
+    def save_by_email(self, data: BinaryIO | str, email: str, postfix: str, post_id: int | None = None,
                       folder: str | None = None) -> str:
 
         if folder is None: folder = self.per_folder.temp.name
@@ -77,7 +82,7 @@ class CloudinaryService:
 
         public_id = f"{email}/{folder}/{postfix}" if post_id is None else f"{email}/{folder}/{post_id}/{postfix}"
 
-        result = upload(file, public_id=public_id, overwrite=True)
+        result = upload(data, public_id=public_id, overwrite=True)
 
         logger.info(f'upload image({folder}) from user: {email} id: {result["public_id"]}')
         return result['secure_url']
@@ -105,18 +110,25 @@ class CloudinaryService:
         }
         return transformation
 
-    def apply_transformation(self, key: str, cloud_current_id, cloud_update_id) -> str:
+    def apply_transformation(self, key: str, email: str, current_postfix: str, updated_postfix: str,
+                             post_id: int | None = None, folder: str | None = None) -> str:
 
         if key not in self.command_transformation:
             raise CloudinaryServiceError(f"Invalid transformation key: {key}")
 
-        cloud_id = cloud_update_id if cloud_update_id is not None else cloud_current_id
-        if cloud_id is None:
-            raise CloudinaryServiceError(msg.PLEASE_UPLOAD_IMAGE)
+        if (cloud_id := self.get_cloud_id(email=email, postfix=updated_postfix)) is None:
+            if (cloud_id := self.get_cloud_id(email=email, postfix=current_postfix)) is None:
+                raise CloudinaryResourceNotFoundError(msg.CLOUD_RESOURCE_NOT_FOUND)
 
-        res_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key)())
-        upload(res_url, public_id=cloud_update_id, overwrite=True)
-        return res_url
+        # Build the URL with the specified transformation
+        transformed_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key)())
+
+        # Create a new public ID for the transformed image
+        logger.info(f'upload image(transformed) from user: {cloud_id}')
+        # Upload the transformed image as a new asset with the new public ID
+        transformed_url = self.save_by_email(transformed_url, email, updated_postfix, post_id, folder)
+
+        return transformed_url
 
 
 cloud_img_service = CloudinaryService()
