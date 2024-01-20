@@ -49,7 +49,7 @@ async def get_publication(publication_id: int, db: AsyncSession, user: User):
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
 
-    return publication.scalar_one_or_none()
+    return publication.unique().scalar_one_or_none()
 
 
 async def update_text_publication(publication_id: int, body: PublicationUpdate, db: AsyncSession, user: User):

@@ -101,8 +101,8 @@ class CloudinaryService:
         if key not in self.command_transformation:
             raise CloudinaryServiceError(f"Invalid transformation key: {key}")
 
-        if (cloud_id := self.get_cloud_id(email=email, postfix=updated_postfix)) is None:
-            if (cloud_id := self.get_cloud_id(email=email, postfix=current_postfix)) is None:
+        if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=updated_postfix)) is None:
+            if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=current_postfix)) is None:
                 raise CloudinaryResourceNotFoundError(msg.CLOUD_RESOURCE_NOT_FOUND)
 
         # Build the URL with the specified transformation
