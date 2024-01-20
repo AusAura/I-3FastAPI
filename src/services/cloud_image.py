@@ -1,15 +1,13 @@
 from enum import Enum
-from typing import BinaryIO, Any, Dict
+from typing import BinaryIO, Any
 
 import cloudinary
-from cloudinary import uploader
-from cloudinary.api import delete_resources_by_prefix, update
-from cloudinary.api_client.execute_request import Response
+from cloudinary.api import delete_resources_by_prefix
 from cloudinary.uploader import upload, destroy, rename
 from cloudinary.exceptions import Error as CloudinaryError
-from cloudinary.utils import cloudinary_url
 
 from src.conf.config import config
+from src.services.transformations import TRANSFORMATIONS
 from src.utils.my_logger import logger
 import src.messages as msg
 
@@ -45,10 +43,7 @@ class CloudinaryService:
             api_secret=config.CLOUDINARY_API_SECRET,
         )
 
-        self.command_transformation = {
-            "round_face": self.round_face,
-            "border": self.border,
-        }
+        self.command_transformation = TRANSFORMATIONS
 
     per_folder = PermissionsFolder
 
@@ -100,27 +95,6 @@ class CloudinaryService:
 
         return {postfix: result['secure_url']}
 
-    @staticmethod
-    def round_face() -> dict:
-        transformation = {
-            "gravity": "face",
-            "height": 200,
-            "width": 200,
-            "crop": "thumb",
-            "radius": "max",
-        }
-        return transformation
-
-    @staticmethod
-    def border() -> dict:
-        transformation = {
-            'aspect_ratio': "1.0",
-            'height': 250,
-            'crop': "fill",
-            'border': "5px_solid_lightblue",
-        }
-        return transformation
-
     def apply_transformation(self, key: str, email: str, current_postfix: str, updated_postfix: str,
                              post_id: int | None = None, folder: str | None = None) -> str:
 
@@ -132,7 +106,7 @@ class CloudinaryService:
                 raise CloudinaryResourceNotFoundError(msg.CLOUD_RESOURCE_NOT_FOUND)
 
         # Build the URL with the specified transformation
-        transformed_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key)())
+        transformed_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key))
 
         # Create a new public ID for the transformed image
         logger.info(f'upload image(transformed) from user: {cloud_id}')
