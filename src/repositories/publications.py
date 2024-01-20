@@ -82,7 +82,7 @@ async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSess
 async def delete_publication(publication_id: int, db: AsyncSession, user: User):
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
-    publication = publication.scalar_one_or_none()
+    publication = publication.unique().scalar_one_or_none()
 
     if publication is not None:
         await db.delete(publication)

@@ -1,3 +1,4 @@
+from cloudinary.api_client.execute_request import Response
 from fastapi import APIRouter, Depends, File, UploadFile, Query, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +34,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 
 
 @router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
-             description=f"Transform image keys : {' '.join(TRANSFORMATION_KEYS)}")
+             description=f"Transform image keys : {', '.join(TRANSFORMATION_KEYS)}")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
                           cloud: CloudinaryService = Depends(cloud_img_service)):
     try:
@@ -114,7 +115,8 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate,
     return publication
 
 
-@router.put("/{publication_id}/update_image", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema)
+@router.put("/{publication_id}/update_image", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema,
+            description=f"Transform image keys : {', '.join(TRANSFORMATION_KEYS)}")
 async def update_image(publication_id: int, body: TransformationKey, db: AsyncSession = Depends(get_db),
                        user: User = Depends(auth_service.get_current_user),
                        cloud: CloudinaryService = Depends(cloud_img_service)):
@@ -152,18 +154,23 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     qr_code_url = cloud.save_by_email(img_bytes, user.email, post_id=publication_id, folder="publications",
                                       postfix="qr_code_img")
 
-    qr_code_img = QrCodeImageSchema(qr_code_img=qr_code_url)
-    await repositories_publications.update_image(publication_id, qr_code_img, db, user)
-    return qr_code_img
+    qr_code_img_body = QrCodeImageSchema(qr_code_img=qr_code_url)
+    await repositories_publications.update_image(publication_id, qr_code_img_body, db, user)
+    return qr_code_img_body
 
 
 @router.delete('/{publication_id}/delete', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_publication(publication_id: int, db: AsyncSession = Depends(get_db),
-                             user: User = Depends(auth_service.get_current_user)):
-    # TODO onecase delete image in table
+                             user: User = Depends(auth_service.get_current_user),
+                             cloud: CloudinaryService = Depends(cloud_img_service)):
+    email = user.email
     publication = await repositories_publications.delete_publication(publication_id, db, user)
+
     if publication is None:
-        logger.warning(f'User {user.email} try delete not exist publication {publication_id}')
+        logger.warning(f'User {email} try delete not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
-    # TODO delete image in cloud
-    return publication
+
+    cloud.delete_by_email(email, publication_id, folder="publications",
+                          postfixes=["current_img", "updated_img", "qr_code_img"])
+
+    return {"detail": msg.PUBLICATION_DELETED}

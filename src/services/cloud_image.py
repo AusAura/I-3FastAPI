@@ -95,6 +95,20 @@ class CloudinaryService:
 
         return {postfix: result['secure_url']}
 
+    def delete_by_email(self, email: str, post_id: int, folder: str, postfixes: list[str]) -> None:
+        #  Delete all resources by post_id from user's cloudinary folder
+        folder_path = f"{email}/{folder}/{post_id}"
+
+        for postfix in postfixes:
+            try:
+                delete_resources_by_prefix(prefix=f"{folder_path}/{postfix}")
+            except CloudinaryError as err:
+                if msg.CLOUD_RESOURCE_NOT_FOUND in str(err):
+                    continue
+                raise CloudinaryServiceError(str(err))
+
+        cloudinary.api.delete_folder(folder_path)
+
     def apply_transformation(self, key: str, email: str, current_postfix: str, updated_postfix: str,
                              post_id: int | None = None, folder: str | None = None) -> str:
 
