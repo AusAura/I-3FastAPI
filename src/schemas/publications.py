@@ -15,9 +15,14 @@ class PublicationSchema(BaseModel):
 class PublicationCreate(PublicationSchema):
     pass
 
+class PublicationCreateAdmin(PublicationCreate):
+    admin: dict
 
 class PublicationUpdate(PublicationSchema):
     pass
+
+class PublicationUpdateAdmin(PublicationUpdate):
+    admin: dict
 
 
 class PublicationResponse(PublicationSchema):

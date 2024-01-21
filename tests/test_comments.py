@@ -1,6 +1,5 @@
 import pytest
 from httpx import AsyncClient
-from main import app
 from src.database.models import *
 from src.schemas.comments import *
 
@@ -12,10 +11,14 @@ from src.database.db import get_db, sessionmanager
 import datetime
 import asyncio
 
+from fastapi import FastAPI
+
 # now = '2024-01-13 19:52:25.934 +0200'
 # now = datetime.datetime.now()
 now = datetime.datetime(year=2022, month=12, day=12, hour=12, minute=12, second=12, microsecond=12, tzinfo=datetime.timezone.utc) ## + datetime.timezone(datetime.timedelta(hours=3))
 # print(now)
+
+app = FastAPI()
 
 @pytest.mark.asyncio
 async def test_add_comment():
@@ -100,7 +103,7 @@ async def test_get_comment():
         result = await get_comment(comment_id, db)
         assert isinstance(result, Comment)
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio #### ОБРАЗЦОВЫЙ
 async def test_delete_comment():
     async with sessionmanager.session() as session:
         # Mock the database session
@@ -125,7 +128,7 @@ async def test_delete_comment():
         # Assert that the result is the deleted comment
         assert result == comment
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio ### ОБРАЗЦОВЫЙ
 async def test_delete_comment_no_comment():
     async with sessionmanager.session() as session:
         # Mock the database session
