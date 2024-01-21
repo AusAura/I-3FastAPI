@@ -1,9 +1,8 @@
 import unittest
 from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, AsyncMock
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.user import UserSchema
 from src.database.models import User, Publication
 from src.repositories.profile import update_avatar_url, update_username, update_about, count_user_publications, \
     count_usage_days, get_user_by_username
