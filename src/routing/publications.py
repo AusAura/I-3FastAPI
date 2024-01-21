@@ -269,9 +269,9 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
     if user.role == Role.admin:
         user = await repository_users.get_user_by_publication_id(publication_id, db)
 
-    # TODO services for cloudinary change image for KEY get url
-    body = UpdatedImageSchema(updated_img=key)  # TODO url
-    publication = await repositories_publications.update_image(publication_id, body, db, user)
+    # # TODO services for cloudinary change image for KEY get url
+    # body = UpdatedImageSchema(updated_img=key)  # TODO url
+    # publication = await repositories_publications.update_image(publication_id, body, db, user)
 
     if publication is None:
         logger.warning(f'User {logger_actor} try update not exist publication {publication_id}')
