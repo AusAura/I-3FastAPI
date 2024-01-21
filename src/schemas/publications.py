@@ -3,14 +3,8 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from src.schemas.tags import TagBase
 
-
-class TempImage(BaseModel):
-    current_img: str
-
-
-class PubImageSchema(TempImage):
-    updated_img: Optional[str] = None
-    qr_code_img: Optional[str] = None
+from src.schemas.pub_images import PubImageSchema
+from src.schemas.user import UserResponse
 
 
 class PublicationSchema(BaseModel):
@@ -30,6 +24,10 @@ class PublicationUpdate(PublicationSchema):
 class PublicationResponse(PublicationSchema):
     id: int
     image: PubImageSchema
+
+
+class PublicationUsersResponse(PublicationResponse):
+    user: UserResponse
 
     class Config:
         from_attributes = True

@@ -27,6 +27,7 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
     refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
+    is_revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
@@ -34,6 +35,8 @@ class User(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+    about: Mapped[str] = mapped_column(String(500), nullable=True)
+
 
 
 class Tag(Base):
@@ -41,8 +44,7 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-
-    publications = relationship("Publication", secondary="publication_tag", back_populates="tags")
+    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
 class PublicationTagAssociation(Base):
@@ -62,17 +64,10 @@ class Publication(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
-    # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
-    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
-
-    # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
-
-    # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication")
-
-    # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
-    # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
+    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
+                                             cascade="all,delete")
+    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
+    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),

@@ -23,11 +23,24 @@ python-multipart = "^0.0.6"
 python-jose = "^3.3.0"
 bcrypt = "^4.1.2"
 libgravatar = "^1.0.4"
-alembic = "^1.13.1"
-
-
-
+anyio = "^4.2.0"
+qrcode = {extras = ["pil"], version = "^7.4.2"}
+pydantic = {extras = ["email"], version = "^2.5.3"}
+asqlite3 = "^0.0.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+testpaths = ["tests"]
+pythonpath = "."
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.23.2"
+httpx = "^0.26.0"
+aiosqlite = "^0.19.0"
+
