@@ -36,7 +36,7 @@ from src.utils.my_logger import logger as my_logger
 ####
 
 
-async def add_comment(publication_id: int, current_user: User, body: CommentModel, db: AsyncSession) -> Comment:
+async def add_comment(publication_id: int, current_user: User, body: CommentModelEditing, db: AsyncSession) -> Comment:
     '''
     User can add comment only for his publication.
     '''

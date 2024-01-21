@@ -2,9 +2,8 @@ import enum
 from datetime import date
 from typing import List
 
-
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -38,7 +37,6 @@ class User(Base):
     about: Mapped[str] = mapped_column(String(500), nullable=True)
 
 
-
 class Tag(Base):
     __tablename__ = "tags"
 
@@ -67,7 +65,8 @@ class Publication(Base):
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
                                              cascade="all,delete")
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
+    ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
@@ -100,3 +99,26 @@ class Comment(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+
+
+class Rating(Base):
+    __tablename__ = "ratings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"))
+    score: Mapped[int] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'publication_id', name='uix_1'),
+        CheckConstraint('score >= 1 AND score <= 5', name='check_score_range')
+    )
+
+    user: Mapped["User"] = relationship("User", backref="ratings", lazy="joined")
+    publication: Mapped["Publication"] = relationship("Publication", back_populates="ratings", lazy="joined")
+
+    @validates('score')
+    def validate_score(self, key, score):
+        if not (1 <= score <= 5):
+            raise ValueError("Score must be between 1 and 5")
+        return score

@@ -147,7 +147,7 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
     """
 
     logger_actor = user.email + f"({user.role})"
-    publications = await repositories_publications.get_publications(limit, offset, db, user)
+    publications = await repositories_publications.get_user_publications(limit, offset, db, user)
 
     if len(publications) == 0:
         logger.warning(f'User {logger_actor} try get not exist publications')
@@ -201,7 +201,7 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     if user.role == Role.admin:
         user = await repository_users.get_user_by_publication_id(publication_id, db)
         
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
 
     if publication is None:
         logger.warning(f'User {logger_actor} try get not exist publication {publication_id}')
@@ -262,7 +262,7 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
     :raises HTTPException: if image not exist in cloudinary {email}/publications/{publication_id}/current_img
     """
     
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
       
     logger_actor = user.email + f'({user.role})'
 
@@ -319,7 +319,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     if user.role == Role.admin:
         user = await repository_users.get_user_by_publication_id(publication_id, db)
 
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
     if publication is None:
         logger.warning(f'User {logger_actor} try get not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
