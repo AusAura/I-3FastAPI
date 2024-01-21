@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, insert
+from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from src.database.db import get_db
-from src.database.models import User, Tag, Publication, PublicationTagAssociation
+from src.database.models import User, PublicationTagAssociation
 from src.repositories import tags as repositories_tags
 from src.repositories import publications as repositories_publications
 from src.schemas.publications import PublicationResponse
 from src.services.auth import auth_service
 from src.schemas.tags import TagBase, TagPublication, TagCreate
 import src.messages as msg
-from src.utils.my_logger import logger
+
 
 router = APIRouter(prefix='/publications/tags', tags=['Tags'])
 
@@ -29,23 +29,6 @@ async def add_tag_to_publication(publication_id: int, body: TagBase, db: AsyncSe
     await db.commit()
     await db.refresh(publication)
     return publication
-
-
-@router.put('/{publication_id}/add', response_model=list[TagBase], status_code=201,
-            description='Add a new tag to pub by id')
-async def add_tag_to_publication(publication_id: int, body: list[TagBase], db: AsyncSession = Depends(get_db),
-                                 user: User = Depends(auth_service.get_current_user)):
-    # TODO sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place?
-    publication = await repositories_publications.get_publication(publication_id, db, user)
-    if publication is None:
-        raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
-
-    tags = await repositories_tags.create_tags(body, db)
-    logger.info(f'Tags created: {tags}')
-
-    tags = await repositories_tags.tags_to_publication_by_id(publication_id, tags, db)
-
-    return tags
 
 
 @router.post('/create', status_code=status.HTTP_201_CREATED, response_model=list[TagPublication])
