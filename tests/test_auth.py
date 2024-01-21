@@ -12,7 +12,7 @@ class TestAsyncUserRepository(unittest.IsolatedAsyncioTestCase):
 
     async def test_create_user(self):
         # Test case 1: Creating first user, role should be 'admin'
-        body = UserSchema(username="test", email="test@example.com.ua", password="testtest")
+        body = UserSchema(username="test", email="test@example.com.ua", password="testtest", about='something')
         with patch('src.repositories.users.count_users', return_value=0) as mock_count:
             mock_count.return_value = 0
             result = await create_user(body, self.session)
@@ -23,7 +23,7 @@ class TestAsyncUserRepository(unittest.IsolatedAsyncioTestCase):
         assert result.role == 'admin'
 
         # Test case 2: Creating second user, role should be 'user'
-        body = UserSchema(username="test2", email="test@example.com.ua", password="testtest")
+        body = UserSchema(username="test2", email="test@example.com.ua", password="testtest", about='something')
         with patch('src.repositories.users.count_users', return_value=1) as mock_count:
             mock_count.return_value = 1
             result = await create_user(body, self.session)

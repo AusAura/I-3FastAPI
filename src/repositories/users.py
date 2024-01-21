@@ -10,14 +10,28 @@ from src.schemas.user import UserSchema
 from src.utils.my_logger import logger
 
 
-async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
+async def get_user_by_email(email: str, db: AsyncSession):
     stmt = select(User).filter_by(email=email)
     user = await db.execute(stmt)
     user = user.scalar_one_or_none()
     return user
 
+# admin
+async def get_user_by_publication_id(publication_id: int, db: AsyncSession):
+    pub = await db.execute(select(Publication).filter_by(id=publication_id))
+    pub = pub.scalar_one_or_none()
+    user = pub.user
+    return user
 
-async def create_user(body: UserSchema, db: AsyncSession = Depends(get_db)):
+
+# admin
+async def get_user_by_id(user_id: int, db: AsyncSession):
+    user = await db.execute(select(User).filter_by(id=user_id))
+    user = user.scalar_one_or_none()
+    return user
+
+
+async def create_user(body: UserSchema, db: AsyncSession):
     role = 'admin' if await count_users(db) == 0 else 'user'
     avatar = None
     try:

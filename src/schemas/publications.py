@@ -16,9 +16,14 @@ class PublicationSchema(BaseModel):
 class PublicationCreate(PublicationSchema):
     tags: Optional[list[TagBase]] = Field(None, max_items=5)
 
+class PublicationCreateAdmin(PublicationCreate):
+    admin: dict
 
 class PublicationUpdate(PublicationSchema):
     pass
+
+class PublicationUpdateAdmin(PublicationUpdate):
+    admin: dict
 
 
 class PublicationResponse(PublicationSchema):

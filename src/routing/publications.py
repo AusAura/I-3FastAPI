@@ -4,8 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from src.database.db import get_db
-from src.database.models import User
+from src.database.models import User, Role, Publication
 from src.repositories import publications as repositories_publications
+from src.repositories import users as repository_users
+
+from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, PublicationUsersResponse, \
+    PublicationCreateAdmin, PublicationUpdateAdmin
 
 from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate
 from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
@@ -22,6 +26,7 @@ import src.messages as msg
 router = APIRouter(prefix='/publications', tags=['publications'])
 
 
+## Utilitary?
 @router.post('/upload_image', status_code=status.HTTP_201_CREATED, response_model=CurrentImageSchema)
 async def upload_image(file: UploadFile = File(), user: User = Depends(auth_service.get_current_user),
                        cloud: CloudinaryService = Depends(cloud_img_service)):
@@ -42,6 +47,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
     return CurrentImageSchema(**{"current_img": current_image_url})
 
 
+## Utilitary?
 @router.post('/transform_image', status_code=status.HTTP_201_CREATED, response_model=UpdatedImageSchema,
              description=f"Transform image keys : {', '.join(TRANSFORMATION_KEYS)}")
 async def transform_image(body: TransformationKey, user: User = Depends(auth_service.get_current_user),
@@ -72,6 +78,7 @@ async def transform_image(body: TransformationKey, user: User = Depends(auth_ser
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
 
 
+## user/admin, created by anyone, admin creates empty-imaged publication
 @router.post('/create', status_code=status.HTTP_201_CREATED, response_model=PublicationResponse)
 async def create_publication(body: PublicationCreate, db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user),
@@ -87,9 +94,11 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 400 if image not uploaded in {email}/temp/ by postfix current_img (base img)
     """
+    
+    email = user.email
 
     # check base image on existence in path {email}/temp/current_img
-    if cloud.get_cloud_id(user.email, "current_img") is None:
+    if cloud.get_cloud_id(email, "current_img") is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
 
     # create publication with empty PubImage, rel one_to_one in field publication.image
@@ -98,12 +107,12 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 
     # replace temp images to folder {email}/publications/{publication_id}/postfix_name & create schemas
     current_image_body = CurrentImageSchema(**cloud.replace_temp_to_publications(
-        email=user.email,
+        email=email,
         postfix="current_img",
         post_id=publication.id))
     # if None - save None in publication.image.updated_img
     update_image_body = UpdatedImageSchema(**cloud.replace_temp_to_publications(
-        email=user.email,
+        email=email,
         postfix="updated_img",
         post_id=publication.id))
 
@@ -114,6 +123,16 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
     return publication
 
 
+# User/Admin, every publication
+@router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
+async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+
+    publications = await repositories_publications.get_all_publications(limit, offset, db)
+    return publications
+
+
+# User-only, for current user
 @router.get('/all_my', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
 async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                            db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
@@ -126,16 +145,46 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
     :return: publications list with PublicationResponse (title, description, image)
     :raises HTTPException: 404 if publications not exist
     """
+
+    logger_actor = user.email + f"({user.role})"
     publications = await repositories_publications.get_publications(limit, offset, db, user)
 
     if len(publications) == 0:
-        logger.warning(f'User {user.email} try get not exist publications')
+        logger.warning(f'User {logger_actor} try get not exist publications')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATIONS_EMPTY)
 
-    logger.info(f'User {user.email} get count{len(publications)} publications')
+    logger.info(f'User {logger_actor} get count{len(publications)} publications')
     return publications
 
 
+#Admin-only, for 1 user
+@router.get('/get_user_publications/{user_id}', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
+async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+    
+    logger_actor = user.email + f"({user.role})"
+
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_id(user_id, db)
+
+        if user is None:
+            logger.warning(f'User {logger_actor} try get not exist user {user_id}')
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.USER_NOT_FOUND)   
+
+        publications = await repositories_publications.get_user_publications(limit, offset, db, user)
+
+        if len(publications) == 0:
+            logger.warning(f'User {logger_actor} try get not exist publications')
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATIONS_EMPTY)
+        
+        logger.info(f'User {logger_actor} get count{len(publications)} publications')
+        return publications
+    
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg.FORBIDDEN)
+
+
+
+## Admin/User, get 1 publication
 @router.get('/{publication_id}', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
 async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                           user: User = Depends(auth_service.get_current_user)):
@@ -147,16 +196,22 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 404 if publication not exist or user not owner
     """
+    
+    logger_actor = user.email + f"({user.role})"
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_publication_id(publication_id, db)
+        
     publication = await repositories_publications.get_publication(publication_id, db, user)
 
     if publication is None:
-        logger.warning(f'User {user.email} try get not exist publication {publication_id}')
+        logger.warning(f'User {logger_actor} try get not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
 
-    logger.info(f'User {user.email} get publication {publication_id}')
+    logger.info(f'User {logger_actor} get publication {publication_id}')
     return publication
 
 
+## Admin/User, 1 user by publication id
 @router.put('/{publication_id}/update_text', status_code=status.HTTP_200_OK, response_model=PublicationResponse)
 async def update_text_publication(publication_id: int, body: PublicationUpdate,
                                   db: AsyncSession = Depends(get_db),
@@ -170,16 +225,22 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate,
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 404 if publication not exist or user not owner
     """
+    
+    logger_actor = user.email + f'({user.role})'
+
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_publication_id(publication_id, db)
 
     publication = await repositories_publications.update_text_publication(publication_id, body, db, user)
     if publication is None:
-        logger.warning(f'User {user.email} try update not exist publication {publication_id}')
+        logger.warning(f'User {logger_actor} try update not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
 
-    logger.info(f'User {user.email} update publication {publication_id}')
+    logger.info(f'User {logger_actor} update publication {publication_id}')
     return publication
 
 
+## Admin/User, 1 publication
 @router.put("/{publication_id}/update_image", status_code=status.HTTP_200_OK, response_model=UpdatedImageSchema,
             description=f"Transform image keys : {', '.join(TRANSFORMATION_KEYS)}")
 async def update_image(publication_id: int, body: TransformationKey, db: AsyncSession = Depends(get_db),
@@ -200,11 +261,23 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
     :raises HTTPException: 400 if key not in TRANSFORMATION_KEYS
     :raises HTTPException: if image not exist in cloudinary {email}/publications/{publication_id}/current_img
     """
+    
     publication = await repositories_publications.get_publication(publication_id, db, user)
+      
+    logger_actor = user.email + f'({user.role})'
+
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_publication_id(publication_id, db)
+
+    # TODO services for cloudinary change image for KEY get url
+    body = UpdatedImageSchema(updated_img=key)  # TODO url
+    publication = await repositories_publications.update_image(publication_id, body, db, user)
 
     if publication is None:
-        logger.warning(f'User {user.email} try update not exist publication {publication_id}')
+        logger.warning(f'User {logger_actor} try update not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
+
+    logger.info(f'User {logger_actor} update image publication {publication_id}')
 
     # apply transformation by key in cloud path {email}/publications/{publication_id}/postfix_name
     # if exist updated_img in cloud apply transformation to it
@@ -230,6 +303,7 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
 async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
                       user: User = Depends(auth_service.get_current_user),
                       cloud: CloudinaryService = Depends(cloud_img_service)):
+  
     """
     Get qr code image from database and save in cloudinary
     folder {email}/publications/{publication_id}/qr_code_img also save in database qr code cloud url
@@ -240,9 +314,14 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     :return: QrCodeImageSchema with qr code cloud url
     :raises HTTPException: 404 if publication not exist or user not owner
     """
+    
+    logger_actor = user.email + f'({user.role})'
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_publication_id(publication_id, db)
+
     publication = await repositories_publications.get_publication(publication_id, db, user)
     if publication is None:
-        logger.warning(f'User {user.email} try get not exist publication {publication_id}')
+        logger.warning(f'User {logger_actor} try get not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
 
     # get cloud url in database updated_img if exist else current_img
@@ -256,7 +335,8 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     await repositories_publications.update_image(publication_id, qr_code_img_body, db, user)
     return qr_code_img_body
 
-
+  
+## Admin/User, 1 user by publication id
 @router.delete('/{publication_id}/delete', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user),
@@ -271,16 +351,22 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     :return: None
     :raises HTTPException: 404 if publication not exist or user not owner
     """
+    
     email = user.email  # user email here because missing Greenlet
+    logger_actor = user.email + f'({user.role})'
+
+    if user.role == Role.admin:
+        user = await repository_users.get_user_by_publication_id(publication_id, db)
+
     publication = await repositories_publications.delete_publication(publication_id, db, user)
-
+    
     if publication is None:
-        logger.warning(f'User {email} try delete not exist publication {publication_id}')
+        logger.warning(f'User {logger_actor} try delete not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
-
+        
     # delete images in cloudinary folder {email}/publications/{publication_id} and delete folder {publication_id}
     cloud.delete_by_email(email, publication_id, folder="publications",
                           postfixes=["current_img", "updated_img", "qr_code_img"])
-
-    logger.info(f'User {email} delete publication {publication_id}')
-    # TODO return? How it must be typed?
+    
+    return publication  
+ 

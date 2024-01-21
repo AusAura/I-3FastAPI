@@ -48,7 +48,7 @@ async def edit_comment(comment_id: int, body: CommentModelEditing, db: AsyncSess
         print(comment.id, comment.text, comment.created_at, comment.publication_id)
         return {'comment': comment, 'detail': COMMENT_SUCCESSFULLY_EDITED}
     else: 
-        return HTTPException(403)
+        raise HTTPException(403)
 
 
 @router.delete('/{publication_id}/comments/{comment_id}/delete', response_model=CommentResponceDeleted, description='No more than 10 requests per minute', dependencies=[]) #Depends(RateLimiter(times=10, seconds=60))
