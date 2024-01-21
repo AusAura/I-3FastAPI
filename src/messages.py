@@ -32,3 +32,4 @@ COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
 # CLOUDINARY
 CLOUDINARY_ERROR = 'Cloudinary error'
 CLOUD_RESOURCE_NOT_FOUND = 'Resource not found'
+CLOUDINARY_LOADING_ERROR = 'Cloudinary loading error, please try again'

@@ -14,7 +14,7 @@ from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedIm
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
 from src.services.cloud_in_ary.cloud_image import cloud_img_service, CloudinaryService, TRANSFORMATION_KEYS
-from src.services.cloud_in_ary.errors import CloudinaryResourceNotFoundError
+from src.services.cloud_in_ary.errors import CloudinaryResourceNotFoundError, CloudinaryLoadingError
 
 from src.utils.my_logger import logger
 import src.messages as msg
@@ -59,13 +59,15 @@ async def transform_image(body: TransformationKey, user: User = Depends(auth_ser
     :raises HTTPException: 400 if image not uploaded in {email}/temp/ by postfix current_img (base img)
     """
     try:
-        # TODO catch cloudinary.exceptions.Error: Error in loading
         updated_image_url = cloud.apply_transformation(
             key=body.key, email=user.email,
             current_postfix="current_img", updated_postfix="updated_img"
         )
     except CloudinaryResourceNotFoundError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PLEASE_UPLOAD_IMAGE)
+    except CloudinaryLoadingError:
+        # status ??
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.CLOUDINARY_LOADING_ERROR)
 
     return UpdatedImageSchema(**{"updated_img": updated_image_url})
 
@@ -208,13 +210,14 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
     # if exist updated_img in cloud apply transformation to it
     # else apply to current_img and save like updated_img
     try:
-        # TODO catch cloudinary.exceptions.Error: Error in loading
         updated_image_url = cloud.apply_transformation(
             key=body.key, email=user.email, folder="publications", post_id=publication_id,
             current_postfix="current_img", updated_postfix="updated_img"
         )
     except CloudinaryResourceNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.PLEASE_UPLOAD_IMAGE)
+    except CloudinaryLoadingError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.CLOUDINARY_LOADING_ERROR)
 
     # update image in database with url the last of new image to publication.image.updated_img
     update_image_body = UpdatedImageSchema(**{"updated_img": updated_image_url})

@@ -7,7 +7,8 @@ from cloudinary.uploader import upload, rename
 from cloudinary.exceptions import Error as CloudinaryError
 
 from src.conf.config import config
-from src.services.cloud_in_ary.errors import CloudinaryServiceError, CloudinaryResourceNotFoundError
+from src.services.cloud_in_ary.errors import CloudinaryServiceError, CloudinaryResourceNotFoundError, \
+    manager_cloudinary_error
 from src.services.cloud_in_ary.transformations import TRANSFORMATIONS
 from src.utils.my_logger import logger
 import src.messages as msg
@@ -52,6 +53,20 @@ class CloudinaryService:
         """
         return self
 
+    def _check_cloud_id(self, cloud_id: str) -> str:
+        """
+        Check if resource exists
+        :param cloud_id: public_id(cloud_id) relative path in cloudinary
+        :return: cloud_id if resource exists else raise CloudinaryResourceNotFoundError
+        :raise CloudinaryResourceNotFoundError: if resource not found
+        :raise CloudinaryError: if unexpected error
+        """
+        try:
+            cloudinary.api.resource(cloud_id)
+            return cloud_id
+        except CloudinaryError as e:
+            raise manager_cloudinary_error(str(e))
+
     def get_cloud_id(self, email: str, postfix: str, post_id: int | None = None,
                      folder: str | None = None) -> str | None:
         """
@@ -75,13 +90,9 @@ class CloudinaryService:
         cloud_id = f"{email}/{folder}/{postfix}" if post_id is None else f"{email}/{folder}/{post_id}/{postfix}"
 
         try:
-            # check if resource exists
-            cloudinary.api.resource(cloud_id)
-            return cloud_id
-        except CloudinaryError as err:
-            if msg.CLOUD_RESOURCE_NOT_FOUND in str(err):
-                return None
-            raise CloudinaryServiceError(str(err))
+            return self._check_cloud_id(cloud_id)
+        except CloudinaryResourceNotFoundError:
+            return None
 
     def save_by_email(self, data: BinaryIO | str, email: str, postfix: str, post_id: int | None = None,
                       folder: str | None = None) -> str:
@@ -156,13 +167,14 @@ class CloudinaryService:
         # delete images in folder with named postfix
         for postfix in postfixes:
             try:
-                delete_resources_by_prefix(prefix=f"{folder_path}/{postfix}")
-            except CloudinaryError as err:
-                if msg.CLOUD_RESOURCE_NOT_FOUND in str(err):
-                    continue
-                raise CloudinaryServiceError(str(err))
+                cloud_id = self._check_cloud_id(cloud_id=f"{folder_path}/{postfix}")
+                delete_resources_by_prefix(prefix=cloud_id)
+            except CloudinaryResourceNotFoundError:
+                continue
+            except CloudinaryError as e:
+                raise manager_cloudinary_error(error_message=str(e))
 
-        # delete folder if empty
+        # delete folder if empty after deleting images
         cloudinary.api.delete_folder(folder_path)
 
     def apply_transformation(self, key: str, email: str, current_postfix: str, updated_postfix: str,
@@ -189,17 +201,20 @@ class CloudinaryService:
             raise CloudinaryServiceError(f"Invalid transformation key: {key}")
 
         # exists check and build cloud_id if .../updated_postfix is None then use .../current_postfix else rise error
-        if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=updated_postfix)) is None:
-            if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=current_postfix)) is None:
+        if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=updated_postfix)) is None: # noqa
+            if (cloud_id := self.get_cloud_id(email=email, post_id=post_id, folder=folder, postfix=current_postfix)) is None: # noqa
                 raise CloudinaryResourceNotFoundError(msg.CLOUD_RESOURCE_NOT_FOUND)
 
-        # Build the URL with the specified transformation
-        transformed_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key))
+        try:
+            # Build the URL with the specified transformation
+            transformed_url = cloudinary.CloudinaryImage(cloud_id).build_url(**self.command_transformation.get(key))
 
-        # Create a new public ID for the transformed image
-        logger.info(f'upload image(transformed) from user: {cloud_id}')
-        # Upload the transformed image as a new asset with the new public ID
-        transformed_url = self.save_by_email(transformed_url, email, updated_postfix, post_id, folder)
+            # Create a new public ID for the transformed image
+            logger.info(f'upload image(transformed) from user: {cloud_id}')
+            # Upload the transformed image as a new asset with the new public ID
+            transformed_url = self.save_by_email(transformed_url, email, updated_postfix, post_id, folder)
+        except CloudinaryError as e:
+            raise manager_cloudinary_error(error_message=str(e))
 
         return transformed_url
 
