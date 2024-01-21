@@ -14,4 +14,5 @@ class RatingUpdate(RatingBase):
 
 
 class RatingResponse(RatingBase):
-    pass
+    user_id: int
+    publication_id: int

@@ -45,3 +45,4 @@ CLOUDINARY_LOADING_ERROR = 'Cloudinary loading error, please try again'
 
 # Ratings
 OWN_PUBLICATION = 'You can\'t rate your own publication'
+ALREADY_VOTED_PUBLICATION = 'You already voted for this publication'
