@@ -36,3 +36,4 @@ USER_ALREADY_EXISTS = "Username already exists, please try another one"
 # CLOUDINARY
 CLOUDINARY_ERROR = 'Cloudinary error'
 CLOUD_RESOURCE_NOT_FOUND = 'Resource not found'
+CLOUDINARY_LOADING_ERROR = 'Cloudinary loading error, please try again'
