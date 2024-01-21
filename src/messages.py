@@ -29,6 +29,11 @@ COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
 
+# TAGS
+TAG_NOT_FOUND = "Tag not found"
+TAGS_LIMIT_EXCEEDED = "Tags limit exceeded"
+TAG_ASSOCIATION_DELETED = "Tag was deleted from the publication"
+
 # Profile
 USER_NOT_FOUND = "User not found"
 USER_ALREADY_EXISTS = "Username already exists, please try another one"

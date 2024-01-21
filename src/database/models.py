@@ -38,12 +38,12 @@ class User(Base):
     about: Mapped[str] = mapped_column(String(500), nullable=True)
 
 
+
 class Tag(Base):
     __tablename__ = "tags"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-
     publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
@@ -64,12 +64,10 @@ class Publication(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
-
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
                                              cascade="all,delete")
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
     tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
-
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
