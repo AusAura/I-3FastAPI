@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field, field_validator
 from starlette import status
 
-from src.services.cloud_image import TRANSFORMATION_KEYS
+from src.services.cloud_in_ary.cloud_image import TRANSFORMATION_KEYS
 
 
 class BaseImageSchema(BaseModel):

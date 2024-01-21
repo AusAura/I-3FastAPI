@@ -7,14 +7,14 @@ from src.database.db import get_db
 from src.database.models import User
 from src.repositories import publications as repositories_publications
 
-from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, PublicationUsersResponse
+from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate
 from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
     TransformationKey
 
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
-from src.services.cloud_image import cloud_img_service, CloudinaryService, CloudinaryResourceNotFoundError, \
-    TRANSFORMATION_KEYS
+from src.services.cloud_in_ary.cloud_image import cloud_img_service, CloudinaryService, TRANSFORMATION_KEYS
+from src.services.cloud_in_ary.errors import CloudinaryResourceNotFoundError
 
 from src.utils.my_logger import logger
 import src.messages as msg

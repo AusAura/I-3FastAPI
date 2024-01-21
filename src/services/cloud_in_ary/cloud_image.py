@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import BinaryIO, Any
+from typing import BinaryIO
 
 import cloudinary
 from cloudinary.api import delete_resources_by_prefix
@@ -7,33 +7,10 @@ from cloudinary.uploader import upload, rename
 from cloudinary.exceptions import Error as CloudinaryError
 
 from src.conf.config import config
-from src.services.transformations import TRANSFORMATIONS
+from src.services.cloud_in_ary.errors import CloudinaryServiceError, CloudinaryResourceNotFoundError
+from src.services.cloud_in_ary.transformations import TRANSFORMATIONS
 from src.utils.my_logger import logger
 import src.messages as msg
-
-
-class CloudinaryServiceError(Exception):
-    """
-    Base class for exceptions in this module.
-    """
-
-    def __init__(self, message: str, *args: Any) -> None:
-        super().__init__(*args)
-        self.message = message
-
-
-class CloudinaryResourceNotFoundError(CloudinaryServiceError):
-    """
-    Raised when resource not found in cloudinary
-    """
-
-    def __init__(self, message: str, *args: Any) -> None:
-        """
-        Init CloudinaryResourceNotFoundError
-        :param message:
-        :param args:
-        """
-        super().__init__(message, *args)
 
 
 class PermissionsFolder(Enum):
