@@ -1,6 +1,10 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from pydantic import BaseModel, Field, field_validator
+from starlette import status
+
+from src.services.cloud_in_ary.cloud_image import TRANSFORMATION_KEYS
 
 
 class BaseImageSchema(BaseModel):
@@ -28,6 +32,6 @@ class TransformationKey(BaseModel):
 
     @field_validator("key")
     def validate_key(cls, key: str) -> str:   # noqa
-        if key not in ["left", "right", "filter"]:
-            raise ValueError(f"Invalid transformation key: {key}")
+        if key not in TRANSFORMATION_KEYS:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid transformation key: {key}")
         return key

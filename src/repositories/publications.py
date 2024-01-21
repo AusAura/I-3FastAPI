@@ -2,7 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, PubImage
-
+from src.repositories.tags import create_tags
+from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate
+from src.schemas.tags import TagBase
+from src.utils.my_logger import logger
 from src.schemas.publications import PublicationCreate, PublicationUpdate
 from src.schemas.pub_images import BaseImageSchema, PubImageSchema
 
@@ -17,7 +20,13 @@ async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
 
 async def create_publication(body: PublicationCreate, img_body: PubImageSchema, db: AsyncSession, user: User):
     pub_img = await create_pub_img(img_body, db)
-    publication = Publication(**body.model_dump(exclude_unset=True), user=user, image=pub_img)
+    publication = Publication(**body.model_dump(exclude_unset=True, exclude={'tags'}), user=user, image=pub_img)
+
+    tags = await create_tags(body.tags, db)
+
+    for tag in tags:
+        publication.tags.append(tag)
+
     db.add(publication)
     await db.commit()
     await db.refresh(publication)
@@ -48,7 +57,7 @@ async def get_all_publications(limit: int, offset: int, db: AsyncSession):
 async def get_publication(publication_id: int, db: AsyncSession, user: User):
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
-    return publication.scalar_one_or_none()
+    return publication.unique().scalar_one_or_none()
 
 
 async def update_text_publication(publication_id: int, body: PublicationUpdate, db: AsyncSession, user: User):
@@ -66,7 +75,7 @@ async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSess
 
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
-    publication = publication.scalar_one_or_none()
+    publication = publication.unique().scalar_one_or_none()
 
     if publication is not None:
         for field, value in body.model_dump(exclude_unset=True).items():
@@ -81,7 +90,7 @@ async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSess
 async def delete_publication(publication_id: int, db: AsyncSession, user: User):
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
-    publication = publication.scalar_one_or_none()
+    publication = publication.unique().scalar_one_or_none()
 
     if publication is not None:
         await db.delete(publication)
