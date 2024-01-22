@@ -13,7 +13,7 @@ async def create_tags(body_tags: list[TagBase], db: AsyncSession):
     for body in body_tags:
         stmt = select(Tag).where(Tag.name == body.name)
         result = await db.execute(stmt)
-        tag = result.scalar_one_or_none()
+        tag = result.unique().scalar_one_or_none()
 
         if tag is None:
             tag = Tag(name=body.name)

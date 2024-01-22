@@ -34,6 +34,11 @@ class PublicationResponse(PublicationSchema):
     average_rating: Optional[float]
 
 
+class PublicationResponseDetail(BaseModel):
+    publication: PublicationResponse
+    detail: str
+
+
 class PublicationUsersResponse(PublicationResponse):
     user: UserResponse
 

@@ -42,8 +42,7 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined",
-                                passive_deletes=True)
+    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
 class PublicationTagAssociation(Base):
@@ -65,9 +64,10 @@ class Publication(Base):
 
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
                                              cascade="all,delete")
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
+    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined",
+                                              cascade="all,delete")
     tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
-                                             lazy="joined", cascade="all, delete")
+                                             lazy="joined")
     ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined",
                                                    cascade="all, delete")
 

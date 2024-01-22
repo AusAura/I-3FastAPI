@@ -8,8 +8,9 @@ from src.database.models import User, Role, Publication
 from src.repositories import publications as repositories_publications
 from src.repositories import users as repository_users
 
-from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, PublicationUsersResponse, \
-    PublicationCreateAdmin, PublicationUpdateAdmin
+from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, \
+    PublicationUsersResponse, \
+    PublicationCreateAdmin, PublicationUpdateAdmin, PublicationResponseDetail
 
 from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate
 from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
@@ -337,7 +338,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
 
   
 ## Admin/User, 1 user by publication id
-@router.delete('/{publication_id}/delete', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{publication_id}/delete', response_model=PublicationResponseDetail)
 async def delete_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                              user: User = Depends(auth_service.get_current_user),
                              cloud: CloudinaryService = Depends(cloud_img_service)):
@@ -367,6 +368,6 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     # delete images in cloudinary folder {email}/publications/{publication_id} and delete folder {publication_id}
     cloud.delete_by_email(email, publication_id, folder="publications",
                           postfixes=["current_img", "updated_img", "qr_code_img"])
-    
-    return publication  
+
+    return {"publication": publication, "detail": msg.PUBLICATION_DELETED}
  
