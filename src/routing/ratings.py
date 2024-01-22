@@ -7,6 +7,7 @@ from src.database.db import get_db
 from src.database.models import User, Publication, Rating, Role
 from src.repositories import publications as repositories_publications
 from src.repositories import ratings as repositories_ratings
+from src.repositories import users as repository_users
 from src.schemas.ratings import RatingCreate, RatingResponse
 from src.schemas.user import UserResponse
 from src.services.auth import auth_service
@@ -37,12 +38,14 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.ALREADY_VOTED_PUBLICATION)
 
 
-# all roles
+# all roles,  if admin, moderator user - any
 @router.get('/publications/{publication_id}/rating/users', status_code=status.HTTP_200_OK,
             response_model=list[UserResponse])
 async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSession = Depends(get_db),
                                               limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                               user: User = Depends(auth_service.get_current_user)):
+    if user.role != Role.user:
+        user = repository_users.get_user_by_publication_id(publication_id, db)
 
     publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
     if publication is None:
