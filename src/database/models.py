@@ -42,14 +42,15 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
+    publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined",
+                                passive_deletes=True)
 
 
 class PublicationTagAssociation(Base):
     __tablename__ = "publication_tag"
 
-    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True)
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id", ondelete="CASCADE"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
 
 
 class Publication(Base):
@@ -65,9 +66,10 @@ class Publication(Base):
     image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
                                              cascade="all,delete")
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
-    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
+                                             lazy="joined", cascade="all, delete")
     ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined",
-                                                   cascade="all,delete-orphan")
+                                                   cascade="all, delete")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),

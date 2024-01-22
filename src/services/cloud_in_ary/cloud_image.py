@@ -5,6 +5,7 @@ import cloudinary
 from cloudinary.api import delete_resources_by_prefix
 from cloudinary.uploader import upload, rename
 from cloudinary.exceptions import Error as CloudinaryError
+from cloudinary.exceptions import NotFound
 
 from src.conf.config import config
 from src.services.cloud_in_ary.errors import CloudinaryServiceError, CloudinaryResourceNotFoundError, \
@@ -174,8 +175,10 @@ class CloudinaryService:
             except CloudinaryError as e:
                 raise manager_cloudinary_error(error_message=str(e))
 
-        # delete folder if empty after deleting images
-        cloudinary.api.delete_folder(folder_path)
+        try:
+            cloudinary.api.delete_folder(folder_path)
+        except NotFound:
+            pass
 
     def apply_transformation(self, key: str, email: str, current_postfix: str, updated_postfix: str,
                              post_id: int | None = None, folder: str | None = None) -> str:

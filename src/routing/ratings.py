@@ -73,4 +73,4 @@ async def delete_rating(user_id: int, publication_id: int, db: AsyncSession = De
     if rating is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.RATING_NOT_FOUND)
 
-    return {"message": msg.RATING_DELETED}
+    return rating
