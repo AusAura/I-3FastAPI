@@ -19,11 +19,10 @@ access_to_route = RoleAccess([Role.admin, Role.moderator])
 
 
 # all roles
-@router.post('/publications/{publication_id}/rating', status_code=status.HTTP_201_CREATED,
+@router.post('/publications/{publication_id}/rating/add', status_code=status.HTTP_201_CREATED,
              response_model=RatingResponse)
 async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession = Depends(get_db),
                      user: User = Depends(auth_service.get_current_user)):
-
     publication = await repositories_publications.get_publication_by_id(publication_id, db)
     if publication is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
@@ -39,7 +38,8 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
 
 
 # all roles
-@router.get('/publications/{publication_id}/rating', status_code=status.HTTP_200_OK, response_model=list[UserResponse])
+@router.get('/publications/{publication_id}/rating/users', status_code=status.HTTP_200_OK,
+            response_model=list[UserResponse])
 async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSession = Depends(get_db),
                                               limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                               user: User = Depends(auth_service.get_current_user)):
@@ -53,7 +53,7 @@ async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSess
 
 
 # admin, moderator only
-@router.get('/{user_id}/rating', status_code=status.HTTP_200_OK, response_model=list[RatingResponse],
+@router.get('/admin/users/{user_id}/ratings', status_code=status.HTTP_200_OK, response_model=list[RatingResponse],
             dependencies=[Depends(access_to_route)])
 async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
                            limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
@@ -61,3 +61,16 @@ async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
 
     ratings = await repositories_ratings.get_all_ratings_by_user_id(user_id, db, limit, offset)
     return ratings
+
+
+# admin, moderator only
+@router.delete('/publications/{publication_id}/ratings/{user_id}/delete', status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(access_to_route)])
+async def delete_rating(user_id: int, publication_id: int, db: AsyncSession = Depends(get_db),
+                        user: User = Depends(auth_service.get_current_user)):
+
+    rating = await repositories_ratings.delete_rating(user_id, publication_id, db)
+    if rating is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.RATING_NOT_FOUND)
+
+    return {"message": msg.RATING_DELETED}

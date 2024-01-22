@@ -1,6 +1,6 @@
 import enum
 from datetime import date
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean, UniqueConstraint, CheckConstraint
@@ -66,7 +66,8 @@ class Publication(Base):
                                              cascade="all,delete")
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
     tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
-    ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined")
+    ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined",
+                                                   cascade="all,delete-orphan")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
