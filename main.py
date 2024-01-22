@@ -43,11 +43,13 @@ app.add_middleware(
 # async def startup():
 #     await FastAPILimiter.init(auth_service.r)
 
-app.include_router(comments_router, prefix='/api')
-app.include_router(auth.router, prefix="/api")
-app.include_router(publications.router, prefix="/api")
-app.include_router(tags.router, prefix="/api")
-app.include_router(profile.router, prefix="/api")
+prefix = '/api/v1'
+
+app.include_router(comments_router, prefix=prefix)
+app.include_router(auth.router, prefix=prefix)
+app.include_router(publications.router, prefix=prefix)
+app.include_router(tags.router, prefix=prefix)
+app.include_router(profile.router, prefix=prefix)
 
 @app.get('/', dependencies=[])  # Depends(RateLimiter(times=2, seconds=5))
 def read_root():
