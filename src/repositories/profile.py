@@ -7,7 +7,7 @@ from libgravatar import Gravatar
 
 from src.database.models import User, Publication
 from src.repositories.users import get_user_by_email
-
+from src.schemas.user import UserNameSchema
 
 from src.utils.my_logger import logger
 
@@ -26,8 +26,8 @@ async def count_user_publications(user_id: int, db: AsyncSession) -> int:
     return result.scalar()
 
 
-async def update_username(user: User, new_username: str, db: AsyncSession) -> User:
-    user.username = new_username
+async def update_username(user: User, body: UserNameSchema, db: AsyncSession) -> User:
+    user.username = body.username
     await db.commit()
     await db.refresh(user)
     return user

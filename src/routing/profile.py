@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from src.database.db import get_db
 from src.database.models import User
 from src.messages import USER_NOT_FOUND, USER_ALREADY_EXISTS
-from src.schemas.user import UserProfile, UserResponse
+from src.schemas.user import UserProfile, UserResponse, UserNameSchema
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repositories import profile as repositories_profile
@@ -40,13 +40,13 @@ async def read_user_profile(username: str, db: AsyncSession = Depends(get_db)):
     return {"user": user, "publications_count": quantity_publications, "usage_days": usage_days}
 
 
-@router.patch("/{new_username}/change_username", response_model=UserResponse)
-async def change_username(new_username: str,
+@router.patch("/change_username", response_model=UserResponse)
+async def change_username(body: UserNameSchema,
                           user: User = Depends(auth_service.get_current_user),
                           db: AsyncSession = Depends(get_db),
                           ):
     try:
-        user = await repositories_profile.update_username(user, new_username, db)
+        user = await repositories_profile.update_username(user, body, db)
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=USER_ALREADY_EXISTS)
     return user
