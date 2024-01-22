@@ -7,7 +7,7 @@ from libgravatar import Gravatar
 
 from src.database.models import User, Publication
 from src.repositories.users import get_user_by_email
-from src.schemas.user import UserNameSchema
+from src.schemas.user import UserNameSchema, AboutSchema
 
 from src.utils.my_logger import logger
 
@@ -33,8 +33,8 @@ async def update_username(user: User, body: UserNameSchema, db: AsyncSession) ->
     return user
 
 
-async def update_about(user: User, new_about: str, db: AsyncSession) -> User:
-    user.about = new_about
+async def update_about(user: User, body: AboutSchema, db: AsyncSession) -> User:
+    user.about = body.about
     await db.commit()
     await db.refresh(user)
     return user

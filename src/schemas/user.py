@@ -7,11 +7,15 @@ class UserNameSchema(BaseModel):
     username: str = Field(min_length=3, max_length=50)
 
 
+class AboutSchema(BaseModel):
+    about: str = Field(min_length=6, max_length=500)
+
+
 class UserSchema(BaseModel):
     username: UserNameSchema
     email: EmailStr = Field(pattern=r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+.[a-z]+$")
     password: str = Field(min_length=6, max_length=15)
-    about: str = Field(min_length=6, max_length=500)
+    about: AboutSchema
 
 
 class UserResponse(BaseModel):

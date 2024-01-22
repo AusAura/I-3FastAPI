@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from src.database.db import get_db
 from src.database.models import User
 from src.messages import USER_NOT_FOUND, USER_ALREADY_EXISTS
-from src.schemas.user import UserProfile, UserResponse, UserNameSchema
+from src.schemas.user import UserProfile, UserResponse, UserNameSchema, AboutSchema
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repositories import profile as repositories_profile
@@ -52,12 +52,12 @@ async def change_username(body: UserNameSchema,
     return user
 
 
-@router.patch("/{new_about}/about", response_model=UserResponse)
-async def change_about(new_about: str,
+@router.patch("/change_about", response_model=UserResponse)
+async def change_about(body: AboutSchema,
                        user: User = Depends(auth_service.get_current_user),
                        db: AsyncSession = Depends(get_db),
                        ):
-    user = await repositories_profile.update_about(user, new_about, db)
+    user = await repositories_profile.update_about(user, body, db)
     return user
 
 
