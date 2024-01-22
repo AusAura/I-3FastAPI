@@ -33,3 +33,4 @@ class Settings(BaseSettings):
 
 dot_env_file = pathlib.Path(__file__).parent.parent.parent / '.env'
 config = Settings(_env_file=dot_env_file)
+print(config.DB_URL)
