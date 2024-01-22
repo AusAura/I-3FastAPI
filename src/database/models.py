@@ -69,7 +69,6 @@ class Publication(Base):
     comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
     tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications")
 
-
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
