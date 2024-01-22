@@ -14,7 +14,7 @@ from src.utils.my_logger import logger
 import src.messages as msg
 
 router = APIRouter(tags=['rating'])
-access_to_route_all = RoleAccess([Role.admin, Role.moderator])
+access_to_route = RoleAccess([Role.admin, Role.moderator])
 
 
 @router.post('/publications/{publication_id}/rating', status_code=status.HTTP_201_CREATED,
@@ -37,11 +37,9 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
 
 
 @router.get('/{user_id}/rating', status_code=status.HTTP_200_OK, response_model=list[RatingResponse],
-            dependencies=[Depends(access_to_route_all)])
+            dependencies=[Depends(access_to_route)])
 async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
                            user: User = Depends(auth_service.get_current_user)):
 
     ratings = await repositories_ratings.get_all_ratings_by_user_id(user_id, db)
-    if ratings is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.RATING_NOT_FOUND)
     return ratings
