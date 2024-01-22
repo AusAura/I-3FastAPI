@@ -4,18 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from src.database.db import get_db
-from src.database.models import User, Publication, Rating
+from src.database.models import User, Publication, Rating, Role
 from src.repositories import publications as repositories_publications
 from src.repositories import ratings as repositories_ratings
 from src.schemas.ratings import RatingCreate, RatingResponse
 from src.services.auth import auth_service
+from src.services.roles import RoleAccess
 from src.utils.my_logger import logger
 import src.messages as msg
 
-router = APIRouter(prefix='/publications', tags=['grades'])
+router = APIRouter(tags=['rating'])
+access_to_route_all = RoleAccess([Role.admin, Role.moderator])
 
 
-@router.post('/{publication_id}/rating/add', status_code=status.HTTP_201_CREATED, response_model=RatingResponse)
+@router.post('/publications/{publication_id}/rating', status_code=status.HTTP_201_CREATED,
+             response_model=RatingResponse)
 async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession = Depends(get_db),
                      user: User = Depends(auth_service.get_current_user)):
 
@@ -31,3 +34,14 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
         return rating
     except IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg.ALREADY_VOTED_PUBLICATION)
+
+
+@router.get('/{user_id}/rating', status_code=status.HTTP_200_OK, response_model=list[RatingResponse],
+            dependencies=[Depends(access_to_route_all)])
+async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
+                           user: User = Depends(auth_service.get_current_user)):
+
+    ratings = await repositories_ratings.get_all_ratings_by_user_id(user_id, db)
+    if ratings is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.RATING_NOT_FOUND)
+    return ratings

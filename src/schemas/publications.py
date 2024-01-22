@@ -12,15 +12,17 @@ class PublicationSchema(BaseModel):
     description: Optional[str] = Field(None, min_length=1, max_length=255)
 
 
-
 class PublicationCreate(PublicationSchema):
     tags: Optional[list[TagBase]] = Field(None, max_items=5)
+
 
 class PublicationCreateAdmin(PublicationCreate):
     admin: dict
 
+
 class PublicationUpdate(PublicationSchema):
     pass
+
 
 class PublicationUpdateAdmin(PublicationUpdate):
     admin: dict
@@ -29,6 +31,7 @@ class PublicationUpdateAdmin(PublicationUpdate):
 class PublicationResponse(PublicationSchema):
     id: int
     image: PubImageSchema
+    average_rating: Optional[float]
 
 
 class PublicationUsersResponse(PublicationResponse):

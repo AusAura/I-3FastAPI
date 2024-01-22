@@ -1,6 +1,6 @@
 import enum
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean, UniqueConstraint, CheckConstraint
@@ -71,6 +71,14 @@ class Publication(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+
+    @property
+    def average_rating(self) -> Optional[float]:
+        if self.ratings:
+            if len(self.ratings) == 0:  # type: ignore
+                return None
+            return sum(rating.score for rating in self.ratings) / len(self.ratings)   # type: ignore
+        return None
 
 
 class PubImage(Base):

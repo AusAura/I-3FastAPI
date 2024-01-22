@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User, Publication, Rating
@@ -11,3 +12,8 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession, 
     await db.refresh(rating)
     return rating
 
+
+async def get_all_ratings_by_user_id(user_id: int, db: AsyncSession):
+    stmt = select(Rating).filter_by(user_id=user_id)
+    ratings = await db.execute(stmt)
+    return ratings.scalars().all()
