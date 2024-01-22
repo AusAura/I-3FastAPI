@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code</title>
+</head>
+<body>
+    <h1>QR Code for Transformed Image</h1>
+    <img src="data:image/png;base64,{{ request.get_image().to_data_url().split(',')[1] }}" alt="QR Code">
+</body>
+</html>
