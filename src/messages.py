@@ -28,6 +28,7 @@ PLEASE_UPLOAD_IMAGE = "Please upload an image"
 COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
+COMMENT_NOT_FOUND = 'Oops, it seems this comment does not exist'
 
 # TAGS
 TAG_NOT_FOUND = "Tag not found"
