@@ -8,7 +8,7 @@ from src.repositories import tags as repositories_tags
 from src.repositories import publications as repositories_publications
 from src.schemas.publications import PublicationResponse
 from src.services.auth import auth_service
-from src.schemas.tags import TagBase, TagPublication, TagCreate
+from src.schemas.tags import TagSchema, TagPublication, TagCreate
 import src.messages as msg
 
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix='/publications/tags', tags=['Tags'])
 
 @router.put('/add_one', response_model=PublicationResponse, status_code=201,
             description='Add a new tag to pub by id')
-async def add_tag_to_publication(publication_id: int, body: TagBase, db: AsyncSession = Depends(get_db),
+async def add_tag_to_publication(publication_id: int, body: TagSchema, db: AsyncSession = Depends(get_db),
                                  user: User = Depends(auth_service.get_current_user)):
 
     publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
@@ -25,9 +25,7 @@ async def add_tag_to_publication(publication_id: int, body: TagBase, db: AsyncSe
         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
 
     tags = await repositories_tags.create_tags([body], db)
-    insert_stmt = insert(PublicationTagAssociation).values(publication_id=publication_id, tag_id=tags[0].id)
-    await db.commit()
-    await db.refresh(publication)
+
     return publication
 
 
@@ -38,7 +36,7 @@ async def create_tags(tags: list[TagCreate], db: AsyncSession = Depends(get_db),
     return [{"id": tag.id, "name": tag.name} for tag in created_tags]
 
 
-@router.get("/{publication_id}", status_code=status.HTTP_200_OK, response_model=list[TagBase])
+@router.get("/{publication_id}", status_code=status.HTTP_200_OK, response_model=list[TagSchema])
 async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                                    user: User = Depends(auth_service.get_current_user)):
     tags = await repositories_tags.get_tags_for_publication_id(publication_id, db)
@@ -46,7 +44,7 @@ async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depen
 
 
 @router.delete('/{publication_id}/delete_tag', status_code=status.HTTP_204_NO_CONTENT)
-async def remove_tags_from_publication(publication_id: int, body: TagBase, db: AsyncSession = Depends(get_db),
+async def remove_tags_from_publication(publication_id: int, body: TagSchema, db: AsyncSession = Depends(get_db),
                                        user: User = Depends(auth_service.get_current_user)):
     publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
 

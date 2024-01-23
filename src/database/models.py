@@ -81,7 +81,7 @@ class Publication(Base):
         if self.ratings:
             if len(self.ratings) == 0:  # type: ignore
                 return None
-            return sum(rating.score for rating in self.ratings) / len(self.ratings)   # type: ignore
+            return sum(rating.score for rating in self.ratings) / len(self.ratings)  # type: ignore
         return None
 
 
@@ -111,6 +111,7 @@ class Comment(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+
 
 class Rating(Base):
     __tablename__ = "ratings"

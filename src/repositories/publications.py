@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.models import User, Publication, PubImage
 from src.repositories.tags import create_tags
 from src.schemas.publications import PublicationCreate, PubImageSchema, PublicationUpdate
-from src.schemas.tags import TagBase
+from src.schemas.tags import TagSchema
 from src.utils.my_logger import logger
 from src.schemas.publications import PublicationCreate, PublicationUpdate
 from src.schemas.pub_images import BaseImageSchema, PubImageSchema

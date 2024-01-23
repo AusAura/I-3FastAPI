@@ -1,17 +1,20 @@
 from pydantic import BaseModel, Field
 
-class TagBase(BaseModel):
+
+class TagSchema(BaseModel):
     name: str = Field(min_length=3, max_length=15)
 
-class TagCreate(TagBase):
+
+class TagCreate(TagSchema):
     pass
 
-class TagUpdate(TagBase):
+
+class TagUpdate(TagSchema):
     pass
 
-class TagPublication(TagBase):
+
+class TagPublication(TagSchema):
     id: int
 
     class Config:
         from_attributes = True
-
