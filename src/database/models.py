@@ -86,7 +86,7 @@ class Publication(Base):
 
     @property
     def tags_name(self) -> str:
-        return ", ".join(tag.name for tag in self.tags)
+        return ", ".join(tag.name for tag in self.tags) if self.tags else None
 
 
 class PubImage(Base):

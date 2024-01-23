@@ -23,10 +23,15 @@ async def create_tags(tags: list[TagSchema], db: AsyncSession) -> list[Tag]:
     return [await create_tag(tag, db) for tag in tags]
 
 
-async def publication_extend_tag(publication_id: int, body: TagSchema, db: AsyncSession):
+async def get_tag_by_name(body: TagSchema, db: AsyncSession):
     stmt = select(Tag).filter_by(name=body.name)
     tag = await db.execute(stmt)
     tag = tag.unique().scalar_one_or_none()
+    return tag
+
+
+async def publication_extend_tag(publication_id: int, body: TagSchema, db: AsyncSession):
+    tag = await get_tag_by_name(body, db)
 
     stmt = PublicationTagAssociation(publication_id=publication_id, tag_id=tag.id)
     try:
@@ -37,4 +42,14 @@ async def publication_extend_tag(publication_id: int, body: TagSchema, db: Async
     await db.refresh(tag)
     return tag
 
+
+async def delete_tag_from_publication(publication_id: int, body: TagSchema, db: AsyncSession):
+    tag = await get_tag_by_name(body, db)
+    stmt = select(PublicationTagAssociation).filter_by(publication_id=publication_id, tag_id=tag.id)
+    association = await db.execute(stmt)
+    association = association.unique().scalar_one_or_none()
+    if association:
+        await db.delete(association)
+        await db.commit()
+    return association
 

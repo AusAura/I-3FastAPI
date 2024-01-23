@@ -31,7 +31,7 @@ class PublicationUpdateAdmin(PublicationUpdate):
 class PublicationResponse(PublicationSchema):
     id: int
     image: PubImageSchema
-    tags_name: str
+    tags_name: Optional[str]
     average_rating: Optional[float]
 
     class Config:
