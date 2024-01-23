@@ -1,5 +1,4 @@
 import logging
-
 from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -105,7 +104,18 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
 
 
 @router.post("/block_user/{user_id}")
-async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(get_db)):
+async def block_user(
+    user_id: int,
+    is_active: bool,
+    current_user: UserResponse = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+
+    if current_user.role.name != 'admin':
+        logger = logging.getLogger(f"User Role: {current_user.role.name}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Permission denied. Admin role required. {logger}")
+
     user = await repositories_users.get_user_by_id(user_id, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -114,3 +124,4 @@ async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(g
     await db.commit()
 
     return {"message": "User status updated successfully"}
+
