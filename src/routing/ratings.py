@@ -24,6 +24,15 @@ access_to_route = RoleAccess([Role.admin, Role.moderator])
              response_model=RatingResponse)
 async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession = Depends(get_db),
                      user: User = Depends(auth_service.get_current_user)):
+    """
+    Add rating to publication by user if not exists else update rating by user if exists
+    :param publication_id: int: id of publication to add rating
+    :param body: RatingCreate: rating data to add or update by user if exists in database
+    :param db: AsyncSession: database session
+    :param user: User: current user
+    :return: RatingResponse: rating data with user data
+
+    """
     publication = await repositories_publications.get_publication_by_id(publication_id, db)
     if publication is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
@@ -44,6 +53,16 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
 async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSession = Depends(get_db),
                                               limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                               user: User = Depends(auth_service.get_current_user)):
+    """
+    Get all users who rated publication by id
+    :param publication_id: int: id of publication to get users who rated
+    :param db: AsyncSession: database session
+    :param limit: int: limit of users who rated publication
+    :param offset: int: offset of users who rated publication
+    :param user: User: current user
+    :return: list[UserResponse]: list of users who rated publication
+
+    """
     if user.role != Role.user:
         user = repository_users.get_user_by_publication_id(publication_id, db)
 
@@ -61,6 +80,13 @@ async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSess
 async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
                            limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                            user: User = Depends(auth_service.get_current_user)):
+    """
+    Get all ratings by user id
+    :param user_id: int: id of user to get ratings
+    :param db: AsyncSession: database session
+    :param limit: int: limit of ratings
+
+    """
 
     ratings = await repositories_ratings.get_all_ratings_by_user_id(user_id, db, limit, offset)
     return ratings
@@ -71,6 +97,15 @@ async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
                dependencies=[Depends(access_to_route)])
 async def delete_rating(user_id: int, publication_id: int, db: AsyncSession = Depends(get_db),
                         user: User = Depends(auth_service.get_current_user)):
+    """
+    Delete rating by user id and publication id
+    :param user_id: int: id of user to delete rating
+    :param publication_id: int: id of publication to delete rating
+    :param db: AsyncSession: database session
+    :param user: User: current user
+    :return: None
+
+    """
 
     rating = await repositories_ratings.delete_rating(user_id, publication_id, db)
     if rating is None:
