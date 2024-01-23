@@ -42,6 +42,7 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+
     publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
@@ -110,7 +111,6 @@ class Comment(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
-
 
 class Rating(Base):
     __tablename__ = "ratings"
