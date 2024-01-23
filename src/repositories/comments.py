@@ -7,7 +7,6 @@ from typing import List
 from sqlalchemy.future import select
 from src.utils.my_logger import logger as my_logger
 
-
 async def add_comment(
     publication_id: int, current_user: User, body: CommentModel, db: AsyncSession
 ) -> Comment:

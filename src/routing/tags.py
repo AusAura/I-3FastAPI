@@ -20,7 +20,7 @@ router = APIRouter(prefix='/publications/tags', tags=['Tags'])
 async def add_tag_to_publication(publication_id: int, body: TagBase, db: AsyncSession = Depends(get_db),
                                  user: User = Depends(auth_service.get_current_user)):
 
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
     if publication is None:
         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
 
@@ -48,7 +48,7 @@ async def get_tags_for_publication(publication_id: int, db: AsyncSession = Depen
 @router.delete('/{publication_id}/delete_tag', status_code=status.HTTP_204_NO_CONTENT)
 async def remove_tags_from_publication(publication_id: int, body: TagBase, db: AsyncSession = Depends(get_db),
                                        user: User = Depends(auth_service.get_current_user)):
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
 
     if publication is None:
         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)
@@ -61,7 +61,7 @@ async def remove_tags_from_publication(publication_id: int, body: TagBase, db: A
 @router.delete('/{publication_id}/delete_all_tags', status_code=status.HTTP_204_NO_CONTENT)
 async def remove_all_tags_from_publication(publication_id: int, db: AsyncSession = Depends(get_db),
                                            user: User = Depends(auth_service.get_current_user)):
-    publication = await repositories_publications.get_publication(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
 
     if publication is None:
         raise HTTPException(status_code=404, detail=msg.PUBLICATION_NOT_FOUND)

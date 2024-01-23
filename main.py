@@ -17,9 +17,7 @@ import uvicorn
 # uvicorn main:app --host localhost --port 8000 --reload
 
 from src.routing.comments import router as comments_router
-from src.routing import auth, profile
-from src.routing import publications
-from src.routing import tags
+from src.routing import auth, profile, publications, tags, ratings
 from src.database.db import get_db
 
 # from src.services.auth import auth_service
@@ -50,6 +48,8 @@ app.include_router(auth.router, prefix=prefix)
 app.include_router(publications.router, prefix=prefix)
 app.include_router(tags.router, prefix=prefix)
 app.include_router(profile.router, prefix=prefix)
+app.include_router(ratings.router, prefix=prefix)
+
 
 @app.get('/', dependencies=[])  # Depends(RateLimiter(times=2, seconds=5))
 def read_root():

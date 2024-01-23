@@ -41,7 +41,7 @@ async def get_user_publications(limit: int, offset: int, db: AsyncSession, user:
 
     publications = await db.execute(stmt)
 
-    return publications.scalars().all()
+    return publications.unique().scalars().all()
 
 
 async def get_all_publications(limit: int, offset: int, db: AsyncSession):
@@ -51,17 +51,20 @@ async def get_all_publications(limit: int, offset: int, db: AsyncSession):
 
     publications = await db.execute(stmt)
 
-    return publications.scalars().all()
+    return publications.unique().scalars().all()
 
 
-async def get_publication(publication_id: int, db: AsyncSession, user: User):
-    stmt = select(Publication).filter_by(id=publication_id, user=user)
+async def get_publication_by_id(publication_id: int, db: AsyncSession, user: User | None = None):
+    if user:
+        stmt = select(Publication).filter_by(id=publication_id, user=user)
+    else:
+        stmt = select(Publication).filter_by(id=publication_id)
     publication = await db.execute(stmt)
     return publication.unique().scalar_one_or_none()
 
 
 async def update_text_publication(publication_id: int, body: PublicationUpdate, db: AsyncSession, user: User):
-    publication = await get_publication(publication_id, db, user)
+    publication = await get_publication_by_id(publication_id, db, user)
     if publication is not None:
         for field, value in body.model_dump(exclude_unset=True).items():
             setattr(publication, field, value)
@@ -72,7 +75,6 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate, 
 
 
 async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSession, user: User):
-
     stmt = select(Publication).filter_by(id=publication_id, user=user)
     publication = await db.execute(stmt)
     publication = publication.unique().scalar_one_or_none()

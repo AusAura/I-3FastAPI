@@ -46,3 +46,13 @@ USER_ALREADY_EXISTS = "Username already exists, please try another one"
 CLOUDINARY_ERROR = 'Cloudinary error'
 CLOUD_RESOURCE_NOT_FOUND = 'Resource not found'
 CLOUDINARY_LOADING_ERROR = 'Cloudinary loading error, please try again'
+
+# Ratings
+OWN_PUBLICATION = 'You can\'t rate your own publication'
+ALREADY_VOTED_PUBLICATION = 'You already voted for this publication'
+RATING_NOT_FOUND = 'Rating not found'
+RATING_DELETED = 'Rating deleted'
+
+# Role
+INVALID_ROLE = 'Invalid role'
+
