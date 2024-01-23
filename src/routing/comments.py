@@ -8,8 +8,8 @@ from src.services.auth import auth_service
 from src.database.models import User
 from src.repositories import comments as repository_comments
 
-from fastapi_limiter.depends import RateLimiter
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Request
+# from fastapi_limiter.depends import RateLimiter
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 
 router = APIRouter(prefix="/publications", tags=["comments"])
 
@@ -22,12 +22,12 @@ router = APIRouter(prefix="/publications", tags=["comments"])
 )  # Depends(RateLimiter(times=100, seconds=60))
 async def read_comments(
     publication_id: int,
-    skip: int = 0,
-    limit: int = 20,
+    skip: int = Query(0, ge=0, le=500),
+    limit: int = Query(20, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     comments = await repository_comments.get_comments(publication_id, skip, limit, db)
-    if comments:
+    if list(comments):
         return comments
     else:
         raise HTTPException(404, PUBLICATION_NOT_FOUND)
@@ -41,8 +41,8 @@ async def read_comments(
 )  # Depends(RateLimiter(times=100, seconds=60))
 async def read_comment(
     comment_id: int, db: AsyncSession = Depends(get_db)
-):  ### publication_id: int,
-    comment = await repository_comments.get_comment(comment_id, db)  ### publication_id,
+):
+    comment = await repository_comments.get_comment(comment_id, db)
     if comment:
         return comment
     else:
@@ -94,7 +94,7 @@ async def edit_comment(
 
 @router.delete(
     "/{publication_id}/comments/{comment_id}/delete",
-    response_model=CommentResponceDeleted,
+    # response_model=CommentResponceDeleted,
     status_code=status.HTTP_204_NO_CONTENT,
     description="No more than 10 requests per minute",
     dependencies=[],
@@ -109,7 +109,5 @@ async def delete_comment(
     else:
         raise HTTPException(403, VERIFICATION_ERROR)
 
-    if comment:
-        return {"comment": comment, "detail": COMMENT_SUCCESSFULLY_DELETED}
-    else:
+    if not comment:
         raise HTTPException(404, COMMENT_NOT_FOUND)
