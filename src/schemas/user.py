@@ -12,18 +12,18 @@ class AboutSchema(BaseModel):
 
 
 class UserSchema(BaseModel):
-    username: UserNameSchema
+    username: str = Field(min_length=3, max_length=50)
     email: EmailStr = Field(pattern=r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+.[a-z]+$")
     password: str = Field(min_length=6, max_length=15)
-    about: AboutSchema
+    about: str
 
 
 class UserResponse(BaseModel):
     id: int = 1
-    username: str
+    username: str = Field(min_length=3, max_length=50)
     email: str
     avatar: str
-    about: str | None
+    about: str
     role: Role
 
     class Config:
