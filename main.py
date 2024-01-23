@@ -1,27 +1,18 @@
-from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
+# from fastapi_limiter import FastAPILimiter
+# from fastapi_limiter.depends import RateLimiter
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
-from fastapi import APIRouter
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
-
-# alembic revision --autogenerate -m 'Init'
-# alembic upgrade head
-# docker-compose up -d
-# docker exec -it dcb9d sh
-# uvicorn main:app --host localhost --port 8000 --reload
 
 from src.routing.comments import router as comments_router
 from src.routing import auth, profile, publications, tags, ratings
 from src.database.db import get_db
 
 # from src.services.auth import auth_service
-
 
 app = FastAPI()
 

@@ -22,7 +22,7 @@ async def add_comment(
     publication = await db.execute(
         select(Publication).filter(Publication.id == publication_id)
     )
-    publication = publication.scalar_one_or_none()
+    publication = publication.unique().scalar_one_or_none()
 
     if not publication:
         return None
@@ -101,7 +101,7 @@ async def get_comments(
         .limit(limit)
         .order_by(Comment.created_at)
     )
-    comment = comment.scalars()
+    comment = comment.unique().scalars().all()
     return comment
 
 
@@ -115,5 +115,5 @@ async def get_comment(
     comment = await db.execute(
         select(Comment).filter(Comment.id == comment_id)
     )
-    comment = comment.scalar_one_or_none()
+    comment = comment.unique().scalar_one_or_none()
     return comment

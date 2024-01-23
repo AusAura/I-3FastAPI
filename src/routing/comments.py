@@ -22,15 +22,16 @@ router = APIRouter(prefix="/publications", tags=["comments"])
 )  # Depends(RateLimiter(times=100, seconds=60))
 async def read_comments(
     publication_id: int,
-    skip: int = Query(0, ge=0, le=500),
-    limit: int = Query(20, ge=0),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=0, le=500),
     db: AsyncSession = Depends(get_db),
 ):
     comments = await repository_comments.get_comments(publication_id, skip, limit, db)
+
     if list(comments):
         return comments
     else:
-        raise HTTPException(404, PUBLICATION_NOT_FOUND)
+        raise HTTPException(404, COMMENTS_NOT_FOUND)
 
 
 @router.get(

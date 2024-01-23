@@ -29,6 +29,7 @@ COMMENT_SUCCESSFULLY_ADDED = 'Successfully added the comment'
 COMMENT_SUCCESSFULLY_EDITED = 'Successfully edited the comment'
 COMMENT_SUCCESSFULLY_DELETED = 'Successfully deleted the comment'
 COMMENT_NOT_FOUND = 'Oops, it seems this comment does not exist'
+COMMENTS_NOT_FOUND = 'Oops, seems there is no comments or publication does not exist'
 
 USER_IS_BLOCK = "User is blocked."
 USER_NOT_FOUND = 'User not found'
