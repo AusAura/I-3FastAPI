@@ -4,18 +4,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from src.database.db import get_db
-from src.database.models import User, Role, Publication
+from src.database.models import User, Role
 from src.repositories import publications as repositories_publications
 from src.repositories import users as repository_users
 
-from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate, \
-    PublicationUsersResponse, \
-    PublicationCreateAdmin, PublicationUpdateAdmin, PublicationResponseDetail
-
-from src.schemas.publications import PublicationCreate, PublicationResponse, PublicationUpdate
-from src.schemas.pub_images import PubImageSchema, CurrentImageSchema, UpdatedImageSchema, QrCodeImageSchema, \
+from src.schemas.publications import (
+    PublicationCreate,
+    PublicationResponse,
+    PublicationUpdate,
+    PublicationResponseDetail,
+    PublicationUsersResponse
+)
+from src.schemas.pub_images import (
+    PubImageSchema,
+    CurrentImageSchema,
+    UpdatedImageSchema,
+    QrCodeImageSchema,
     TransformationKey
-
+)
 from src.services.qr_code import generate_qr_code_byte
 from src.services.auth import auth_service
 from src.services.cloud_in_ary.cloud_image import cloud_img_service, CloudinaryService, TRANSFORMATION_KEYS
@@ -127,7 +133,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 # User/Admin, every publication
 @router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+                               db: AsyncSession = Depends(get_db)):
 
     publications = await repositories_publications.get_all_publications(limit, offset, db)
     return publications
@@ -161,7 +167,7 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
 #Admin-only, for 1 user
 @router.get('/get_user_publications/{user_id}', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
 async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+                                db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     
     logger_actor = user.email + f"({user.role})"
 

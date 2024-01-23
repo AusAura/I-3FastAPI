@@ -25,7 +25,7 @@ class Auth:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
     # define a function to generate a new access token
     async def create_access_token(

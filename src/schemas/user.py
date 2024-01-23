@@ -8,22 +8,22 @@ class UserNameSchema(BaseModel):
 
 
 class AboutSchema(BaseModel):
-    about: str = Field(min_length=6, max_length=500)
+    about: Optional[str] = Field(None, min_length=1, max_length=255)
 
 
 class UserSchema(BaseModel):
-    username: UserNameSchema
+    username: str = Field(min_length=3, max_length=50)
     email: EmailStr = Field(pattern=r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+.[a-z]+$")
     password: str = Field(min_length=6, max_length=15)
-    about: AboutSchema
+    about: Optional[str] = Field(None, min_length=1, max_length=255)
 
 
 class UserResponse(BaseModel):
     id: int = 1
-    username: str
+    username: str = Field(min_length=3, max_length=50)
     email: str
     avatar: str
-    about: str | None
+    about: Optional[str] = Field(None, min_length=1, max_length=255)
     role: Role
 
     class Config:
