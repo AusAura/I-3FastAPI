@@ -84,6 +84,10 @@ class Publication(Base):
             return sum(rating.score for rating in self.ratings) / len(self.ratings)  # type: ignore
         return None
 
+    @property
+    def tags_name(self) -> str:
+        return ", ".join(tag.name for tag in self.tags)
+
 
 class PubImage(Base):
     __tablename__ = "pub_images"

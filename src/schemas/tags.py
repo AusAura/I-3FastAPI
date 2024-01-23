@@ -5,16 +5,6 @@ class TagSchema(BaseModel):
     name: str = Field(min_length=3, max_length=15)
 
 
-class TagCreate(TagSchema):
-    pass
-
-
-class TagUpdate(TagSchema):
-    pass
-
-
-class TagPublication(TagSchema):
-    id: int
-
-    class Config:
-        from_attributes = True
+class TagsDetailResponse(BaseModel):
+    detail: str
+    tag: TagSchema

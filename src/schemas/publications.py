@@ -31,7 +31,11 @@ class PublicationUpdateAdmin(PublicationUpdate):
 class PublicationResponse(PublicationSchema):
     id: int
     image: PubImageSchema
+    tags_name: str
     average_rating: Optional[float]
+
+    class Config:
+        from_attributes = True
 
 
 class PublicationResponseDetail(BaseModel):

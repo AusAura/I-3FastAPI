@@ -101,7 +101,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 400 if image not uploaded in {email}/temp/ by postfix current_img (base img)
     """
-    
+
     email = user.email
 
     # check base image on existence in path {email}/temp/current_img
@@ -134,7 +134,6 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 @router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                db: AsyncSession = Depends(get_db)):
-
     publications = await repositories_publications.get_all_publications(limit, offset, db)
     return publications
 
@@ -164,11 +163,12 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
     return publications
 
 
-#Admin-only, for 1 user
-@router.get('/get_user_publications/{user_id}', status_code=status.HTTP_200_OK, response_model=list[PublicationResponse])
+# Admin-only, for 1 user
+@router.get('/get_user_publications/{user_id}', status_code=status.HTTP_200_OK,
+            response_model=list[PublicationResponse])
 async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                                db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
-    
+                                db: AsyncSession = Depends(get_db),
+                                user: User = Depends(auth_service.get_current_user)):
     logger_actor = user.email + f"({user.role})"
 
     if user.role == Role.admin:
@@ -176,19 +176,18 @@ async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=5
 
         if user is None:
             logger.warning(f'User {logger_actor} try get not exist user {user_id}')
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.USER_NOT_FOUND)   
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.USER_NOT_FOUND)
 
         publications = await repositories_publications.get_user_publications(limit, offset, db, user)
 
         if len(publications) == 0:
             logger.warning(f'User {logger_actor} try get not exist publications')
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATIONS_EMPTY)
-        
+
         logger.info(f'User {logger_actor} get count{len(publications)} publications')
         return publications
-    
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg.FORBIDDEN)
 
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg.FORBIDDEN)
 
 
 ## Admin/User, get 1 publication
@@ -203,18 +202,10 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 404 if publication not exist or user not owner
     """
-    
-    logger_actor = user.email + f"({user.role})"
-    if user.role == Role.admin:
-        user = await repository_users.get_user_by_publication_id(publication_id, db)
-        
-    publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
+    publication = await repositories_publications.get_publication_by_id(publication_id, db)
 
     if publication is None:
-        logger.warning(f'User {logger_actor} try get not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
-
-    logger.info(f'User {logger_actor} get publication {publication_id}')
     return publication
 
 
@@ -232,7 +223,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate,
     :return: publication by PublicationResponse (title, description, image)
     :raises HTTPException: 404 if publication not exist or user not owner
     """
-    
+
     logger_actor = user.email + f'({user.role})'
 
     if user.role == Role.admin:
@@ -268,9 +259,9 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
     :raises HTTPException: 400 if key not in TRANSFORMATION_KEYS
     :raises HTTPException: if image not exist in cloudinary {email}/publications/{publication_id}/current_img
     """
-    
+
     publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
-      
+
     logger_actor = user.email + f'({user.role})'
 
     if user.role == Role.admin:
@@ -310,7 +301,6 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
 async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
                       user: User = Depends(auth_service.get_current_user),
                       cloud: CloudinaryService = Depends(cloud_img_service)):
-  
     """
     Get qr code image from database and save in cloudinary
     folder {email}/publications/{publication_id}/qr_code_img also save in database qr code cloud url
@@ -321,7 +311,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     :return: QrCodeImageSchema with qr code cloud url
     :raises HTTPException: 404 if publication not exist or user not owner
     """
-    
+
     logger_actor = user.email + f'({user.role})'
     if user.role == Role.admin:
         user = await repository_users.get_user_by_publication_id(publication_id, db)
@@ -342,7 +332,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     await repositories_publications.update_image(publication_id, qr_code_img_body, db, user)
     return qr_code_img_body
 
-  
+
 ## Admin/User, 1 user by publication id
 @router.delete('/{publication_id}/delete', response_model=PublicationResponseDetail)
 async def delete_publication(publication_id: int, db: AsyncSession = Depends(get_db),
@@ -358,7 +348,7 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     :return: None
     :raises HTTPException: 404 if publication not exist or user not owner
     """
-    
+
     email = user.email  # user email here because missing Greenlet
     logger_actor = user.email + f'({user.role})'
 
@@ -366,14 +356,13 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
         user = await repository_users.get_user_by_publication_id(publication_id, db)
 
     publication = await repositories_publications.delete_publication(publication_id, db, user)
-    
+
     if publication is None:
         logger.warning(f'User {logger_actor} try delete not exist publication {publication_id}')
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
-        
+
     # delete images in cloudinary folder {email}/publications/{publication_id} and delete folder {publication_id}
     cloud.delete_by_email(email, publication_id, folder="publications",
                           postfixes=["current_img", "updated_img", "qr_code_img"])
 
     return {"publication": publication, "detail": msg.PUBLICATION_DELETED}
- 
