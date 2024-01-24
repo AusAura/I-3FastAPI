@@ -12,15 +12,13 @@ from src.database.db import SQLALCHEMY_DATABASE_URL
 
 from asyncpg import Connection
 
-
 ### CUSTOM ASYNC MIGRATIONS SCRIPT
 def run_migrations(connection: Connection):
     context.configure(
-        connection=connection, target_metadata=target_metadata
-    )
+            connection=connection, target_metadata=target_metadata
+        )
     with context.begin_transaction():
         context.run_migrations()
-
 
 ### CUSTOM ASYNC MIGRATIONS SCRIPT
 async def run_async_migrations():
@@ -38,7 +36,6 @@ async def run_async_migrations():
     # with context.begin_transaction():
     #     context.run_migrations()
 
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -54,7 +51,6 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -83,6 +79,8 @@ def run_migrations_offline() -> None:
     #     literal_binds=True,
     #     dialect_opts={"paramstyle": "named"},
     # )
+
+
 
 
 def run_migrations_online() -> None:
