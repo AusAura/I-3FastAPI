@@ -105,7 +105,7 @@ async def delete_comment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):  
-    if current_user.role == Role.admin:
+    if current_user.role == Role.admin or current_user.role == Role.moderator:
         comment = await repository_comments.delete_comment(comment_id, current_user, db)
     else:
         raise HTTPException(403, VERIFICATION_ERROR)

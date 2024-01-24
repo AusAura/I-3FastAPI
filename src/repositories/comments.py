@@ -55,7 +55,7 @@ async def edit_comment(
             and_(Comment.user_id == current_user.id, Comment.id == comment_id)
         )
     )
-    comment = comment.scalar_one_or_none()
+    comment = comment.unique().scalar_one_or_none()
 
     my_logger.info(body.text)
     if comment:
@@ -78,7 +78,7 @@ async def delete_comment(
             and_(Comment.user_id == current_user.id, Comment.id == comment_id)
         )
     )
-    comment = comment.scalar_one_or_none()
+    comment = comment.unique().scalar_one_or_none()
 
     if comment:
         await db.delete(comment)
