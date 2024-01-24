@@ -45,6 +45,8 @@ async def publication_extend_tag(publication_id: int, body: TagSchema, db: Async
 
 async def delete_tag_from_publication(publication_id: int, body: TagSchema, db: AsyncSession):
     tag = await get_tag_by_name(body, db)
+    if tag is None:
+        return None
     stmt = select(PublicationTagAssociation).filter_by(publication_id=publication_id, tag_id=tag.id)
     association = await db.execute(stmt)
     association = association.unique().scalar_one_or_none()
