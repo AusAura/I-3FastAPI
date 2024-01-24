@@ -72,3 +72,5 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
 
 if __name__ == '__main__':
     uvicorn.run('main:app', port=8000, reload=True)
+
+    ## postgres://abc-admin:nsziOfby07PG@ep-dry-haze-92688201.eu-central-1.pg.koyeb.app/koyebdb

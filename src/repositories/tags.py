@@ -39,7 +39,7 @@ async def tags_to_publication_by_id(publication_id: int, tags, db: AsyncSession)
 async def get_tag_id_by_name(body, db):
     stmt = select(Tag).where(Tag.name == body.name)
     result = await db.execute(stmt)
-    tag = result.scalar_one_or_none()
+    tag = result.unique().scalar_one_or_none()
     return tag.id
 
 
@@ -52,7 +52,7 @@ async def get_tags_for_publication_id(publication_id, db):
     tags = []
     for tag_id in tag_ids:
         tag = await db.execute(select(Tag).filter_by(id=tag_id))
-        tags.append(tag.scalar_one_or_none())
+        tags.append(tag.unique().scalar_one_or_none())
         # await db.refresh(tag)
     return tags
 
@@ -67,7 +67,7 @@ async def delete_tag_from_publication_by_name(publication_id, body, db):
     tag_id = await get_tag_id_by_name(body, db)
     stmt = select(PublicationTagAssociation).filter_by(tag_id=tag_id, publication_id=publication_id)
     pub_as_tag = await db.execute(stmt)
-    pub_as_tag = pub_as_tag.scalar_one_or_none()
+    pub_as_tag = pub_as_tag.unique().scalar_one_or_none()
     if pub_as_tag is not None:
         await db.delete(pub_as_tag)
         await db.commit()

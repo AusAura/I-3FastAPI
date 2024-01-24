@@ -171,7 +171,7 @@ async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=5
                                 user: User = Depends(auth_service.get_current_user)):
     logger_actor = user.email + f"({user.role})"
 
-    if user.role == Role.admin:
+    if user.role == Role.admin or user.role == Role.moderator:
         user = await repository_users.get_user_by_id(user_id, db)
 
         if user is None:
