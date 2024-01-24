@@ -7,6 +7,12 @@ import qrcode
 
 
 async def generate_qr_code_byte(cloudinary_link):
+    """
+    Generate QR code byte.
+    :param cloudinary_link: cloudinary link: cloudinary link from request body
+    :return: qr code byte in bytes
+
+    """
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,

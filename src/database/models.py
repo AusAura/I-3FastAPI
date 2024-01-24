@@ -42,7 +42,6 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-
     publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
