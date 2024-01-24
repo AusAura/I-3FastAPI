@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+
 from src.database.db import get_db
-from src.database.models import User, PublicationTagAssociation
+from src.database.models import User
 from src.repositories import tags as repositories_tags
 from src.repositories import publications as repositories_publications
 from src.services.auth import auth_service

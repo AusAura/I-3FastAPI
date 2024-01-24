@@ -1,5 +1,3 @@
-import cloudinary
-import cloudinary.uploader
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -21,12 +19,6 @@ from src.repositories import profile as repositories_profile
 from src.services.cloud_in_ary.cloud_image import CloudinaryService, cloud_img_service
 
 router = APIRouter(prefix="/profile", tags=["profile"])
-cloudinary.config(
-    cloud_name=config.CLOUDINARY_NAME,
-    api_key=config.CLOUDINARY_API_KEY,
-    api_secret=config.CLOUDINARY_API_SECRET,
-    secure=True,
-)
 
 
 @router.get("/{username}", response_model=UserProfile)
