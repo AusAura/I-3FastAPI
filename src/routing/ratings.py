@@ -4,15 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from src.database.db import get_db
-from src.database.models import User, Publication, Rating, Role
+from src.database.models import User, Role
 from src.repositories import publications as repositories_publications
 from src.repositories import ratings as repositories_ratings
-from src.repositories import users as repository_users
+
 from src.schemas.ratings import RatingCreate, RatingResponse
 from src.schemas.user import UserResponse
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
-from src.utils.my_logger import logger
 import src.messages as msg
 
 router = APIRouter(tags=['rating'])
@@ -66,7 +65,7 @@ async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSess
 
     """
     if user.role != Role.user:
-        user = repository_users.get_user_by_publication_id(publication_id, db)
+        user = None
 
     publication = await repositories_publications.get_publication_by_id(publication_id, db, user)
     if publication is None:

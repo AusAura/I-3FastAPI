@@ -80,8 +80,12 @@ class Publication(Base):
         if self.ratings:
             if len(self.ratings) == 0:  # type: ignore
                 return None
-            return sum(rating.score for rating in self.ratings) / len(self.ratings)   # type: ignore
+            return sum(rating.score for rating in self.ratings) / len(self.ratings)  # type: ignore
         return None
+
+    @property
+    def tags_name(self) -> str:
+        return ", ".join(tag.name for tag in self.tags) if self.tags else None
 
 
 class PubImage(Base):

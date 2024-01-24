@@ -136,7 +136,6 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 # User/Admin, every publication
 @router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-
                            db: AsyncSession = Depends(get_db):
     """
     Get all publications
@@ -146,7 +145,7 @@ async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: in
     :param db: AsyncSession: database
     :param user: current user owner of publications
     :return: publications list with PublicationUsersResponse
-
+    """
 
     publications = await repositories_publications.get_all_publications(limit, offset, db)
     return publications
@@ -193,7 +192,6 @@ async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=5
     :param user: current user owner of publications
     :return: publications list with PublicationResponse (title, description, image)
     """
-
     logger_actor = user.email + f"({user.role})"
 
     if user.role == Role.admin:
@@ -228,6 +226,7 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     """
 
     publication = await repositories_publications.get_publication_by_id(publication_id, db)
+
     if publication is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
     return publication
