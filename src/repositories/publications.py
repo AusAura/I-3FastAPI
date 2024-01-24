@@ -13,6 +13,7 @@ from src.schemas.pub_images import BaseImageSchema, PubImageSchema
 async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
     """
     Create new pub_img in database.
+
     :param img_body: PubImageSchema: pub_img schema to create in database
     :param db: AsyncSession: database session to create pub_img in database
     :return: PubImage: pub_img created in database
@@ -28,6 +29,7 @@ async def create_pub_img(img_body: PubImageSchema, db: AsyncSession):
 async def create_publication(body: PublicationCreate, img_body: PubImageSchema, db: AsyncSession, user: User):
     """
     Create new publication in database.
+
     :param body: PublicationCreate: publication schema to create in database
     :param img_body: PubImageSchema: pub_img schema to create in database
     :param db: AsyncSession: database session to create publication in database
@@ -53,6 +55,7 @@ async def create_publication(body: PublicationCreate, img_body: PubImageSchema, 
 async def get_user_publications(limit: int, offset: int, db: AsyncSession, user: User):
     """
     Get all user publications from database.
+
     :param limit: int: limit of publications to get
     :param offset: int: offset of publications to get
     :param db: AsyncSession: database session to get publications from database
@@ -72,6 +75,7 @@ async def get_user_publications(limit: int, offset: int, db: AsyncSession, user:
 async def get_all_publications(limit: int, offset: int, db: AsyncSession):
     """
     Get all publications from database.
+
     :param limit: int: limit of publications to get
     :param offset: int: offset of publications to get
     :param db: AsyncSession: database session to get publications from database
@@ -90,6 +94,7 @@ async def get_all_publications(limit: int, offset: int, db: AsyncSession):
 async def get_publication_by_id(publication_id: int, db: AsyncSession, user: User | None = None):
     """
     Get publication by id from database.
+
     :param publication_id: int: id of publication to get
     :param db: AsyncSession: database session to get publication from database
     :param user: User | None: user to get publication
@@ -107,6 +112,7 @@ async def get_publication_by_id(publication_id: int, db: AsyncSession, user: Use
 async def update_text_publication(publication_id: int, body: PublicationUpdate, db: AsyncSession, user: User):
     """
     Update text of publication in database.
+
     :param publication_id: int: id of publication to update in database
     :param body: PublicationUpdate: publication schema to update in database
     :param db: AsyncSession: database session to update publication in database
@@ -127,6 +133,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate, 
 async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSession, user: User):
     """
     Update image of publication in database.
+
     :param publication_id: int: id of publication to update in database
     :param body: BaseImageSchema: image schema to update in database
     :param db: AsyncSession: database session to update publication in database
@@ -151,6 +158,7 @@ async def update_image(publication_id: int, body: BaseImageSchema, db: AsyncSess
 async def delete_publication(publication_id: int, db: AsyncSession, user: User):
     """
     Delete publication from database.
+
     :param publication_id: int: id of publication to delete from database
     :param db: AsyncSession: database session to delete publication from database
     :param user: User: user to delete publication

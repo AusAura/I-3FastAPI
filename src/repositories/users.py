@@ -13,6 +13,7 @@ from src.utils.my_logger import logger
 async def get_user_by_email(email: str, db: AsyncSession):
     """
     Get user by email from db table User
+
     :param email: str: user email from request body
     :param db: AsyncSession: database connection
     :return: user object: user object from db
@@ -27,6 +28,7 @@ async def get_user_by_email(email: str, db: AsyncSession):
 async def get_user_by_publication_id(publication_id: int, db: AsyncSession):
     """
     Get user by publication_id from db table Publication
+
     :param publication_id: int: publication id from request body
     :param db: AsyncSession: database connection
     :return: user object: user object from db
@@ -42,6 +44,7 @@ async def get_user_by_publication_id(publication_id: int, db: AsyncSession):
 async def get_user_by_id(user_id: int, db: AsyncSession):
     """
     Get user by id from db table User
+
     :param user_id: int: user id from request body
     :param db: AsyncSession: database connection
     :return: user object: user object from db
@@ -55,6 +58,7 @@ async def get_user_by_id(user_id: int, db: AsyncSession):
 async def create_user(body: UserSchema, db: AsyncSession):
     """
     Create new user in db table User
+
     :param body: UserSchema: user object from request body
     :param db: AsyncSession: database connection
     :return: user object: user object from db
@@ -78,6 +82,7 @@ async def create_user(body: UserSchema, db: AsyncSession):
 async def update_token(user: User, token: str | None, db: AsyncSession):
     """
     Update user token in db table User
+
     :param user: User: user object from db
     :param token: str | None: user token from request body
     :param db: AsyncSession: database connection
@@ -91,6 +96,7 @@ async def update_token(user: User, token: str | None, db: AsyncSession):
 async def confirmed_email(email: str, db: AsyncSession) -> None:
     """
     Update user confirmed in db table User
+
     :param email: str: user email from request body
     :param db: AsyncSession: database connection
     :return: None
@@ -104,6 +110,7 @@ async def confirmed_email(email: str, db: AsyncSession) -> None:
 async def count_users(db: AsyncSession) -> int:
     """
     Count users in db table User
+
     :param db: AsyncSession: database connection
     :return: int: count of users
 

@@ -22,6 +22,7 @@ class Auth:
     def verify_password(self, plain_password, hashed_password):
         """
         Verify hashed password with plain text password. Return True if password is correct else False.
+
         :param plain_password: plain text password from request body
         :param hashed_password: hashed password from database
         :return: True if password is correct else False
@@ -32,6 +33,7 @@ class Auth:
     def get_password_hash(self, password: str):
         """
         Hash password with bcrypt.
+
         :param password: plain text password from request body
         :return: hashed password
 
@@ -46,6 +48,7 @@ class Auth:
     ):
         """
         Create access token for user.
+
         :param data: user data: email, password, etc.
         :param expires_delta: access token expiration time in seconds
         :return: encoded access token
@@ -70,6 +73,7 @@ class Auth:
     ):
         """
         Create refresh token for user.
+
         :param data: user data: email, password, etc.
         :param expires_delta: refresh token expiration time in seconds
         :return: encoded refresh token
@@ -91,6 +95,7 @@ class Auth:
     async def decode_refresh_token(self, refresh_token: str):
         """
         Decode refresh token.
+
         :param refresh_token: refresh token from request body
         :return: email from refresh token
 
@@ -117,6 +122,7 @@ class Auth:
     ):
         """
         Get current user.
+
         :param token: access token from request body: str
         :param db: database session: AsyncSession
         :return: current user: User
@@ -149,6 +155,7 @@ class Auth:
     def create_email_token(self, data: dict):
         """
         Create email token.
+
         :param data: user data: email, password, etc.
         :return: encoded email token
 
@@ -162,6 +169,7 @@ class Auth:
     async def get_email_from_token(self, token: str):
         """
         Get email from token.
+
         :param token: email token from request body
         :return: email from email token
 

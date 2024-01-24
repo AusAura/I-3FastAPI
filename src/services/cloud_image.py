@@ -3,6 +3,7 @@ from cloudinary.uploader import upload
 from cloudinary.api import update, delete_resources_by_prefix
 from src.conf.config import config
 
+
 class CloudinaryService:
     def __init__(self):
         self.configure_cloudinary()
@@ -55,6 +56,7 @@ class CloudinaryService:
     def del_temp(self, email, public_id) -> None:
         """
         Delete temp folder in cloudinary account
+
         :param email: user email: user email from request body
         :param public_id: cloudinary public id of image file
         :return: None
@@ -76,6 +78,7 @@ class CloudinaryService:
             public_id=public_id,
             transformation=transformation
         )
+
 
 cloudinary_service = CloudinaryService()
 

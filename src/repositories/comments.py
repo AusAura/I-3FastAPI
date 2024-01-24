@@ -13,7 +13,9 @@ async def add_comment(
 ) -> Comment:
     """
     User can add comment for current publication (if exist).
+
     Receiving publication id and current user.
+
     :param publication_id: int: publication id received
     :param current_user: User: current user received
     :param body: CommentModel: comment model received
@@ -56,7 +58,9 @@ async def edit_comment(
 ) -> Comment | None:
     """
     Editing comment only for current user's publication.
+
     Receiving comment id and current user.
+
     :param comment_id: int: comment id to edit
     :param body: CommentModel: comment model with new text
     :param current_user: User: current user (creator of publication)
@@ -85,7 +89,9 @@ async def delete_comment(
 ) -> Comment | None:
     """
     (Admin only) Delete comment.
+
     Receiving comment id and current user.
+
     :param comment_id: int: comment id to delete from db
     :param current_user: User: current user (creator of publication)
     :param db: AsyncSession: database session
@@ -111,7 +117,9 @@ async def get_comments(
 ) -> List[Comment]:
     """
     (Any) Get all comments.
+
     Receiving publication id.
+
     :param publication_id: int: publication id to get comments from db
     :param skip: int: offset for pagination
     :param limit: int: limit for pagination
@@ -135,7 +143,9 @@ async def get_comment(
 ) -> Comment | None:
     """
     (Any) Get one comment.
+
     Receiving comment id.
+
     :param comment_id: int: comment id to get from db
     :param db: AsyncSession: database session
     :return: Comment | None: comment from db or None

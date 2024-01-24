@@ -26,6 +26,7 @@ async def add_rating(publication_id: int, body: RatingCreate, db: AsyncSession =
                      user: User = Depends(auth_service.get_current_user)):
     """
     Add rating to publication by user if not exists else update rating by user if exists
+
     :param publication_id: int: id of publication to add rating
     :param body: RatingCreate: rating data to add or update by user if exists in database
     :param db: AsyncSession: database session
@@ -55,6 +56,7 @@ async def get_users_ratings_by_publication_id(publication_id: int, db: AsyncSess
                                               user: User = Depends(auth_service.get_current_user)):
     """
     Get all users who rated publication by id
+
     :param publication_id: int: id of publication to get users who rated
     :param db: AsyncSession: database session
     :param limit: int: limit of users who rated publication
@@ -82,6 +84,7 @@ async def get_user_ratings(user_id: int, db: AsyncSession = Depends(get_db),
                            user: User = Depends(auth_service.get_current_user)):
     """
     Get all ratings by user id
+
     :param user_id: int: id of user to get ratings
     :param db: AsyncSession: database session
     :param limit: int: limit of ratings
@@ -99,6 +102,7 @@ async def delete_rating(user_id: int, publication_id: int, db: AsyncSession = De
                         user: User = Depends(auth_service.get_current_user)):
     """
     Delete rating by user id and publication id
+
     :param user_id: int: id of user to delete rating
     :param publication_id: int: id of publication to delete rating
     :param db: AsyncSession: database session

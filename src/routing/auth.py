@@ -20,6 +20,7 @@ get_refresh_token = HTTPBearer()
 async def signup(body: UserSchema, bt: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Create new user in database and send email for verification to user email address
+
     :param body: UserSchema: body of request with user data
     :param bt: BackgroundTasks: background task for sending email
     :param request: Request: request object
@@ -40,6 +41,7 @@ async def signup(body: UserSchema, bt: BackgroundTasks, request: Request, db: As
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     """
     Login user and generate JWT token
+
     :param body: OAuth2PasswordRequestForm: body of request with username and password
     :param db: AsyncSession: database session
     :return: TokenSchema: access token and refresh token and token type
@@ -67,6 +69,7 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh
                  db: AsyncSession = Depends(get_db)):
     """
     Logout user and revoke refresh token
+
     :param credentials: HTTPAuthorizationCredentials: refresh token
     :param db: AsyncSession: database session
     :return: {"message": "Logged out successfully"}
@@ -92,6 +95,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_
                         db: AsyncSession = Depends(get_db)):
     """
     Refresh JWT token
+
     :param credentials: HTTPAuthorizationCredentials: refresh token
     :param db: AsyncSession: database session
     :return: TokenSchema: access token and refresh token and token type
@@ -114,6 +118,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)):
     """
     Confirm email address
+
     :param token: str: token from email
     :param db: AsyncSession: database session
     :return: {"message": "Email confirmed"}
@@ -134,6 +139,7 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
                         db: AsyncSession = Depends(get_db)):
     """
     Request email for verification
+
     :param body: RequestEmail: body of request with email address
     :param background_tasks: BackgroundTasks: background tasks for sending email
     :param request: Request: request object
@@ -154,6 +160,7 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
 async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(get_db)):
     """
     Block user
+
     :param user_id: int: user id from database
     :param is_active: bool: user status
     :param db: AsyncSession: database session

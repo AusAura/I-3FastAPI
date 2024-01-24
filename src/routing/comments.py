@@ -28,6 +28,7 @@ async def read_comments(
 ):
     """
     Get comments by publication id and skip and limit parameters
+
     :param publication_id: int: id of publication to get comments
     :param skip: int: number of comments to skip from the beginning of the list
     :param limit: int: number of comments to return from the beginning of the list
@@ -54,6 +55,7 @@ async def read_comment(
 ):
     """
     Get comment by comment id
+
     :param comment_id: int: id of comment to get
     :param db: AsyncSession: database session
     :return: CommentModelReturned: comment
@@ -81,6 +83,7 @@ async def add_comment(
 ):
     """
     Add comment by publication id and body
+
     :param publication_id: int: id of publication to add comment
     :param body: CommentModelEditing: body of comment to add
     :param db: AsyncSession: database session
@@ -112,6 +115,7 @@ async def edit_comment(
 ):
     """
     Edit comment by comment id and body
+
     :param comment_id: int: id of comment to edit
     :param body: CommentModelEditing: body of comment to edit
     :param db: AsyncSession: database session
@@ -141,6 +145,7 @@ async def delete_comment(
 ):
     """
     Delete comment by comment id
+
     :param comment_id: int: id of comment to delete
     :param db: AsyncSession: database session
     :param current_user: User: current user from auth service

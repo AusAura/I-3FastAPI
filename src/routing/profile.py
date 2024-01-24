@@ -33,6 +33,7 @@ cloudinary.config(
 async def read_user_profile(username: str, db: AsyncSession = Depends(get_db)):
     """
     Get user profile by username and count of publications and usage days in profile
+
     :param username: str: username of user to get profile data
     :param db: AsyncSession: database session
     :return: UserProfile: user profile data with publications count and usage days
@@ -54,6 +55,7 @@ async def change_username(body: UserNameSchema,
                           ):
     """
     Change username by current user
+
     :param body: UserNameSchema: new username to change
     :param user: User: current user
     :param db: AsyncSession: database session
@@ -74,6 +76,7 @@ async def change_about(body: AboutSchema,
                        ):
     """
     Change about by current user
+
     :param body: AboutSchema: new about to change
     :param user: User: current user
     :param db: AsyncSession: database session
@@ -89,6 +92,7 @@ async def change_avatar(file: UploadFile = File(), user: User = Depends(auth_ser
                         db: AsyncSession = Depends(get_db), cloud: CloudinaryService = Depends(cloud_img_service)):
     """
     Change avatar by current user
+
     :param file: UploadFile: file to upload
     :param user: User: current user
     :param db: AsyncSession: database session

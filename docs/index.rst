@@ -122,44 +122,6 @@ REST API routing transformations
   :show-inheritance:
 
 
-REST API services Auth
-=====================================
-.. automodule:: src.services.auth
-  :members:
-  :undoc-members:
-  :show-inheritance:
-
-
-REST API services Cloud_image
-=====================================
-.. automodule:: src.services.cloud_image
-  :members:
-  :undoc-members:
-  :show-inheritance:
-
-
-REST API services Email
-=====================================
-.. automodule:: src.services.email
-  :members:
-  :undoc-members:
-  :show-inheritance:
-
-
-REST API services QR_code
-=====================================
-.. automodule:: src.services.qr_code
-  :members:
-  :undoc-members:
-  :show-inheritance:
-
-
-REST API services Roles
-=====================================
-.. automodule:: src.services.roles
-  :members:
-  :undoc-members:
-  :show-inheritance:
 
 
 
