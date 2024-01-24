@@ -22,10 +22,9 @@ async def create_publication(body: PublicationCreate, img_body: PubImageSchema, 
     pub_img = await create_pub_img(img_body, db)
     publication = Publication(**body.model_dump(exclude_unset=True, exclude={'tags'}), user=user, image=pub_img)
 
-    tags = await create_tags(body.tags, db)
-
-    for tag in tags:
-        publication.tags.append(tag)
+    if body.tags is not None:
+        for tag in await create_tags(body.tags, db):
+            publication.tags.append(tag)
 
     db.add(publication)
     await db.commit()
