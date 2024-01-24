@@ -3,18 +3,18 @@ from pydantic import BaseModel, Field, EmailStr
 
 from src import messages
 
+
 class CommentModelEditing(BaseModel):
     text: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CommentModel(CommentModelEditing):
-
     created_at: datetime
     updated_at: datetime
-    
+
 
 class CommentModelReturned(CommentModel):
     id: int
@@ -26,9 +26,11 @@ class CommentResponceAdded(BaseModel):
     comment: CommentModelReturned
     detail: str = messages.COMMENT_SUCCESSFULLY_ADDED
 
+
 class CommentResponceEdited(BaseModel):
     comment: CommentModelReturned
     detail: str = messages.COMMENT_SUCCESSFULLY_EDITED
+
 
 class CommentResponceDeleted(BaseModel):
     comment: CommentModelReturned

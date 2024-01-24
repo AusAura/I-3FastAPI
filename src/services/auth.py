@@ -24,7 +24,7 @@ class Auth:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
     # define a function to generate a new access token
     async def create_access_token(
@@ -34,7 +34,7 @@ class Auth:
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
+            expire = datetime.utcnow() + timedelta(minutes=100)
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
         )

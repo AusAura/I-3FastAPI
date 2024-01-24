@@ -1,33 +1,24 @@
-from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
+# from fastapi_limiter import FastAPILimiter
+# from fastapi_limiter.depends import RateLimiter
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
-from fastapi import APIRouter
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
 
-# alembic revision --autogenerate -m 'Init'
-# alembic upgrade head
-# docker-compose up -d
-# docker exec -it dcb9d sh
-# uvicorn main:app --host localhost --port 8000 --reload
-
 from src.routing.comments import router as comments_router
-from src.routing import auth
-from src.routing import publications
+from src.routing import auth, profile, publications, tags, ratings
 from src.database.db import get_db
-# from src.services.auth import auth_service
 
+# from src.services.auth import auth_service
 
 app = FastAPI()
 
-origins = [ 
+origins = [
     "http://localhost:8000"
-    ]
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,14 +32,21 @@ app.add_middleware(
 # async def startup():
 #     await FastAPILimiter.init(auth_service.r)
 
-app.include_router(comments_router, prefix='/api')
-app.include_router(auth.router, prefix="/api")
-app.include_router(publications.router, prefix="/api")
+prefix = '/api/v1'
 
-@app.get('/', dependencies=[]) # Depends(RateLimiter(times=2, seconds=5))
+app.include_router(comments_router, prefix=prefix)
+app.include_router(auth.router, prefix=prefix)
+app.include_router(publications.router, prefix=prefix)
+app.include_router(tags.router, prefix=prefix)
+app.include_router(profile.router, prefix=prefix)
+app.include_router(ratings.router, prefix=prefix)
+
+
+@app.get('/', dependencies=[])  # Depends(RateLimiter(times=2, seconds=5))
 def read_root():
     return {'message': 'It works!'}
-  
+
+
 @app.get("/healthchecker")
 async def healthchecker(db: AsyncSession = Depends(get_db)):
     """
@@ -70,6 +68,7 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
+
 
 if __name__ == '__main__':
     uvicorn.run('main:app', port=8000, reload=True)

@@ -1,10 +1,9 @@
 import enum
 from datetime import date
-from typing import List
+from typing import Optional
 
-
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+from sqlalchemy import String, ForeignKey, DateTime, func, Enum, Boolean, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -43,15 +42,14 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-
     publications = relationship("Publication", secondary="publication_tag", back_populates="tags", lazy="joined")
 
 
 class PublicationTagAssociation(Base):
     __tablename__ = "publication_tag"
 
-    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"), primary_key=True)
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id", ondelete="CASCADE"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
 
 
 class Publication(Base):
@@ -64,22 +62,26 @@ class Publication(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", backref="publications", lazy="joined")
 
-    # cls PubImage  __tablename__ = "pub_images"   OneToOne relationship
-    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False)
-
-    # # cls Tag  __tablename__ = "tags"  secondary="post_tag"   ManyToMany relationship
-    tags: Mapped[List["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
+    image: Mapped["PubImage"] = relationship("PubImage", backref="publications", lazy="joined", uselist=False,
+                                             cascade="all,delete")
+    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined",
+                                              cascade="all,delete")
+    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="publication_tag", back_populates="publications",
                                              lazy="joined")
-
-    # cls Comment  __tablename__ = "comments"     OneToMany relationship
-    comment: Mapped["Comment"] = relationship("Comment", back_populates="publication", lazy="joined")
-
-    # # cls Rating  __tablename__ = "ratings"  OneToMany relationship
-    # rating: Mapped["Rating"] = relationship("Rating", back_populates="publications")
+    ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="publication", lazy="joined",
+                                                   cascade="all, delete")
 
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+
+    @property
+    def average_rating(self) -> Optional[float]:
+        if self.ratings:
+            if len(self.ratings) == 0:  # type: ignore
+                return None
+            return sum(rating.score for rating in self.ratings) / len(self.ratings)   # type: ignore
+        return None
 
 
 class PubImage(Base):
@@ -108,3 +110,26 @@ class Comment(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime(timezone=True), default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime(timezone=True), default=func.now(),
                                              onupdate=func.now())
+
+
+class Rating(Base):
+    __tablename__ = "ratings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id"))
+    score: Mapped[int] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'publication_id', name='uix_1'),
+        CheckConstraint('score >= 1 AND score <= 5', name='check_score_range')
+    )
+
+    user: Mapped["User"] = relationship("User", backref="ratings", lazy="joined")
+    publication: Mapped["Publication"] = relationship("Publication", back_populates="ratings", lazy="joined")
+
+    @validates('score')
+    def validate_score(self, key, score):
+        if not (1 <= score <= 5):
+            raise ValueError("Score must be between 1 and 5")
+        return score
