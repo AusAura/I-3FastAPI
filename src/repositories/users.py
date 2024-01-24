@@ -24,6 +24,7 @@ async def get_user_by_email(email: str, db: AsyncSession):
     user = user.scalar_one_or_none()
     return user
 
+
 # admin
 async def get_user_by_publication_id(publication_id: int, db: AsyncSession):
     """

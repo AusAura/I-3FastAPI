@@ -1,5 +1,4 @@
 import logging
-
 from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +18,7 @@ get_refresh_token = HTTPBearer()
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(body: UserSchema, bt: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)):
     """
+
     Create new user in database and send email for verification to user email address
 
     :param body: UserSchema: body of request with user data
@@ -26,6 +26,7 @@ async def signup(body: UserSchema, bt: BackgroundTasks, request: Request, db: As
     :param request: Request: request object
     :param db: AsyncSession: database session
     :return: UserSchema: created user data with token and refresh token and token type
+
 
     """
     exist_user = await repositories_users.get_user_by_email(body.email, db)
@@ -40,7 +41,7 @@ async def signup(body: UserSchema, bt: BackgroundTasks, request: Request, db: As
 @router.post("/login", response_model=TokenSchema)
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     """
-    Login user and generate JWT token
+    Login user and generate JWT and refresh token for user with email and password in body
 
     :param body: OAuth2PasswordRequestForm: body of request with username and password
     :param db: AsyncSession: database session
@@ -68,6 +69,7 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
 async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
                  db: AsyncSession = Depends(get_db)):
     """
+
     Logout user and revoke refresh token
 
     :param credentials: HTTPAuthorizationCredentials: refresh token
@@ -94,11 +96,13 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(get_refresh
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
                         db: AsyncSession = Depends(get_db)):
     """
-    Refresh JWT token
+
+    Generate new access token with refresh token in body
 
     :param credentials: HTTPAuthorizationCredentials: refresh token
     :param db: AsyncSession: database session
     :return: TokenSchema: access token and refresh token and token type
+
 
     """
     token = credentials.credentials
@@ -117,11 +121,13 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_
 @router.get('/confirmed_email/{token}')
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)):
     """
-    Confirm email address
+
+    Confirm email with token from email verification link
 
     :param token: str: token from email
     :param db: AsyncSession: database session
     :return: {"message": "Email confirmed"}
+
 
     """
     email = await auth_service.get_email_from_token(token)
@@ -138,6 +144,7 @@ async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)):
 async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
                         db: AsyncSession = Depends(get_db)):
     """
+
     Request email for verification
 
     :param body: RequestEmail: body of request with email address
@@ -157,7 +164,13 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
 
 
 @router.post("/block_user/{user_id}")
-async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(get_db)):
+
+async def block_user(
+    user_id: int,
+    is_active: bool,
+    current_user: UserResponse = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
     """
     Block user
 
@@ -167,6 +180,11 @@ async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(g
     :return: {"message": "User status updated successfully"}
 
     """
+    if current_user.role.name != 'admin':
+        logger = logging.getLogger(f"User Role: {current_user.role.name}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Permission denied. Admin role required. {logger}")
+
     user = await repositories_users.get_user_by_id(user_id, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -175,3 +193,4 @@ async def block_user(user_id: int, is_active: bool, db: AsyncSession = Depends(g
     await db.commit()
 
     return {"message": "User status updated successfully"}
+
