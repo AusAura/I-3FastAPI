@@ -23,6 +23,14 @@ conf = ConnectionConfig(
 
 
 async def send_email(email: EmailStr, username: str, host: str):
+    """
+    Send email to user.
+    :param email: user email: user email from request body
+    :param username: user name: user name from request body
+    :param host: host url: host url from request body
+    :return: None
+
+    """
     try:
         token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(

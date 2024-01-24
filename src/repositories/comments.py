@@ -7,11 +7,21 @@ from typing import List
 from sqlalchemy.future import select
 from src.utils.my_logger import logger as my_logger
 
+
 async def add_comment(
-    publication_id: int, current_user: User, body: CommentModel, db: AsyncSession
+        publication_id: int, current_user: User, body: CommentModel, db: AsyncSession
 ) -> Comment:
     """
     User can add comment for current publication (if exist).
+
+    Receiving publication id and current user.
+
+    :param publication_id: int: publication id received
+    :param current_user: User: current user received
+    :param body: CommentModel: comment model received
+    :param db: AsyncSession: database session received
+    :return: Comment: comment added
+
     """
     comment = Comment(
         user_id=current_user.id,  ## user received
@@ -44,11 +54,19 @@ async def add_comment(
 
 
 async def edit_comment(
-    comment_id: int, body: CommentModelEditing, current_user: User, db: AsyncSession
+        comment_id: int, body: CommentModelEditing, current_user: User, db: AsyncSession
 ) -> Comment | None:
     """
     Editing comment only for current user's publication.
+
     Receiving comment id and current user.
+
+    :param comment_id: int: comment id to edit
+    :param body: CommentModel: comment model with new text
+    :param current_user: User: current user (creator of publication)
+    :param db: AsyncSession: database session
+    :return: Comment: comment edited
+
     """
     comment = await db.execute(
         select(Comment).filter(
@@ -67,11 +85,18 @@ async def edit_comment(
 
 
 async def delete_comment(
-    comment_id: int, current_user: User, db: AsyncSession
+        comment_id: int, current_user: User, db: AsyncSession
 ) -> Comment | None:
     """
     (Admin only) Delete comment.
+
     Receiving comment id and current user.
+
+    :param comment_id: int: comment id to delete from db
+    :param current_user: User: current user (creator of publication)
+    :param db: AsyncSession: database session
+    :return: Comment: comment deleted from db
+
     """
     comment = await db.execute(
         select(Comment).filter(
@@ -88,11 +113,19 @@ async def delete_comment(
 
 
 async def get_comments(
-    publication_id: int, skip: int, limit: int, db: AsyncSession
+        publication_id: int, skip: int, limit: int, db: AsyncSession
 ) -> List[Comment]:
     """
     (Any) Get all comments.
+
     Receiving publication id.
+
+    :param publication_id: int: publication id to get comments from db
+    :param skip: int: offset for pagination
+    :param limit: int: limit for pagination
+    :param db: AsyncSession: database session
+    :return: List[Comment]: list of comments from db
+
     """
     comment = await db.execute(
         select(Comment)
@@ -106,11 +139,17 @@ async def get_comments(
 
 
 async def get_comment(
-    comment_id: int, db: AsyncSession
+        comment_id: int, db: AsyncSession
 ) -> Comment | None:
     """
     (Any) Get one comment.
+
     Receiving comment id.
+
+    :param comment_id: int: comment id to get from db
+    :param db: AsyncSession: database session
+    :return: Comment | None: comment from db or None
+
     """
     comment = await db.execute(
         select(Comment).filter(Comment.id == comment_id)

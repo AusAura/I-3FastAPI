@@ -42,6 +42,7 @@ async def upload_image(file: UploadFile = File(), user: User = Depends(auth_serv
 
     Load image from user and save it in Cloudinary
     folder {email}/temp/ with postfix current_img
+
     :param file: UploadFile
     :param user: current user owner of image in Cloudinary folder {email}/temp/
     :param cloud: object CloudinaryService
@@ -64,6 +65,7 @@ async def transform_image(body: TransformationKey, user: User = Depends(auth_ser
 
     Update current image by key and save it in Cloudinary folder {email}/temp/ with postfix updated_img
     changed image will be stacked, by use this router over and over
+
     :param body: TransformationKey
     :param user: current user owner of image in Cloudinary folder {email}/temp/
     :param cloud: object CloudinaryService
@@ -94,6 +96,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
     Create publication
 
     Create publication with current_img(must be uploaded) and updated_img(optional) in Cloudinary
+
     :param body: title, description
     :param db: AsyncSession
     :param user: current user (creator) owner of publication
@@ -133,7 +136,17 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 # User/Admin, every publication
 @router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                               db: AsyncSession = Depends(get_db)):
+                           db: AsyncSession = Depends(get_db):
+    """
+    Get all publications
+
+    :param limit: number of publications: 10
+    :param offset: offset of publications: 0
+    :param db: AsyncSession: database
+    :param user: current user owner of publications
+    :return: publications list with PublicationUsersResponse
+    """
+
     publications = await repositories_publications.get_all_publications(limit, offset, db)
     return publications
 
@@ -144,6 +157,7 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
                            db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     """
     Get all publications of current user
+
     :param limit:
     :param offset:
     :param db: AsyncSession
@@ -167,8 +181,17 @@ async def get_publications(limit: int = Query(10, ge=10, le=500), offset: int = 
 @router.get('/get_user_publications/{user_id}', status_code=status.HTTP_200_OK,
             response_model=list[PublicationResponse])
 async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                                db: AsyncSession = Depends(get_db),
-                                user: User = Depends(auth_service.get_current_user)):
+                           db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+    """
+    Get publications of 1 user
+
+    :param user_id: id of user: 1
+    :param limit: number of publications: 10
+    :param offset: offset of publications: 0
+    :param db: AsyncSession: database
+    :param user: current user owner of publications
+    :return: publications list with PublicationResponse (title, description, image)
+    """
     logger_actor = user.email + f"({user.role})"
 
     if user.role == Role.admin or user.role == Role.moderator:
@@ -195,6 +218,7 @@ async def get_user_publications(user_id: int, limit: int = Query(10, ge=10, le=5
 async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db)):
     """
     Get publication by id
+
     :param publication_id:
     :param db: AsyncSession
     :return: publication by PublicationResponse (title, description, image)
@@ -202,6 +226,7 @@ async def get_publication(publication_id: int, db: AsyncSession = Depends(get_db
     """
 
     publication = await repositories_publications.get_publication_by_id(publication_id, db)
+
     if publication is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg.PUBLICATION_NOT_FOUND)
     return publication
@@ -214,6 +239,7 @@ async def update_text_publication(publication_id: int, body: PublicationUpdate,
                                   user: User = Depends(auth_service.get_current_user)):
     """
     Update publication text (title, description)
+
     :param publication_id:
     :param body: title(str), description(str)
     :param db: AsyncSession
@@ -247,6 +273,7 @@ async def update_image(publication_id: int, body: TransformationKey, db: AsyncSe
 
     Get publication by id and use transformation keys to upload new transformed image
     in cloudinary also save in database Cloudinary url the last of new image
+
     :param publication_id:
     :param body: key(str) in TRANSFORMATION_KEYS
     :param db: AsyncSession
@@ -302,6 +329,7 @@ async def get_qr_code(publication_id: int, db: AsyncSession = Depends(get_db),
     """
     Get qr code image from database and save in cloudinary
     folder {email}/publications/{publication_id}/qr_code_img also save in database qr code cloud url
+
     :param publication_id:
     :param db: AsyncSession
     :param user: current user owner of publication
@@ -339,6 +367,7 @@ async def delete_publication(publication_id: int, db: AsyncSession = Depends(get
     """
     Delete publication from database and cloudinary images and folder
     also delete images(PubImage) in database cascade='all,delete' (one to one)
+
     :param publication_id:
     :param db: AsyncSession
     :param user: current user owner of publication
