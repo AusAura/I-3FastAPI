@@ -136,7 +136,7 @@ async def create_publication(body: PublicationCreate, db: AsyncSession = Depends
 # User/Admin, every publication
 @router.get('/get_all_publications', status_code=status.HTTP_200_OK, response_model=list[PublicationUsersResponse])
 async def get_all_publications(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                           db: AsyncSession = Depends(get_db):
+                           db: AsyncSession = Depends(get_db)):
     """
     Get all publications
 
